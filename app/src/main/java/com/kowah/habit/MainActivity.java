@@ -35,7 +35,7 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kowah.habit.fragment.AlertFragment;
+import com.kowah.habit.fragment.AlarmFragment;
 import com.kowah.habit.fragment.ChatFragment;
 import com.kowah.habit.service.CommonService;
 import com.kowah.habit.utils.FileUtils;
@@ -71,7 +71,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
     // 三个Fragment（页面）
     ChatFragment chatFragment;
-    AlertFragment alertFragment;
+    AlarmFragment alarmFragment;
     ChatFragment thirdFragment;
 
     // 页面以及按钮集合
@@ -154,12 +154,12 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         bundle.putInt("tab", 0);
         chatFragment = new ChatFragment();
         chatFragment.setArguments(bundle);
-        alertFragment = new AlertFragment();
+        alarmFragment = new AlarmFragment();
         thirdFragment = new ChatFragment();
 
         fragmentList = new ArrayList<>();
         fragmentList.add(chatFragment);
-        fragmentList.add(alertFragment);
+        fragmentList.add(alarmFragment);
         fragmentList.add(thirdFragment);
 
         mViewPager = findViewById(R.id.viewpager);
@@ -203,7 +203,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 popupWindow.dismiss();
                 break;
             case R.id.btn_pop_cancel:
-                navigateTo(LoginActivity.class);
+//                navigateTo(LoginActivity.class);
                 popupWindow.dismiss();
                 break;
             case R.id.timeButton:
@@ -238,6 +238,18 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 uploadProfile(mCurrentPhotoPath);
             }
         }
+    }
+
+    @CallSuper
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            View view = getCurrentFocus();
+            if (isShouldHideKeyBord(view, event)) {
+                hideSoftInput(view.getWindowToken());
+            }
+        }
+        return super.dispatchTouchEvent(event);
     }
 
     /**
@@ -452,18 +464,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    @CallSuper
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            View view = getCurrentFocus();
-            if (isShouldHideKeyBord(view, event)) {
-                hideSoftInput(view.getWindowToken());
-            }
-        }
-        return super.dispatchTouchEvent(event);
     }
 
     //判定当前是否需要隐藏
