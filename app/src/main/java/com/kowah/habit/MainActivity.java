@@ -1,0 +1,489 @@
+package com.kowah.habit;
+
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.provider.MediaStore;
+import android.support.annotation.CallSuper;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.FileProvider;
+import android.support.v4.view.ViewPager;
+import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
+
+import com.alibaba.fastjson.JSONObject;
+import com.kowah.habit.fragment.AlertFragment;
+import com.kowah.habit.fragment.ChatFragment;
+import com.kowah.habit.service.CommonService;
+import com.kowah.habit.utils.FileUtils;
+import com.xiasuhuei321.loadingdialog.view.LoadingDialog;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
+public class MainActivity extends FragmentActivity implements OnClickListener {
+    Context mContext;
+
+    private static final int REQUEST_GALLERY_IMAGE = 10;// 图库选取图片标识请求码
+    private static final int REQUEST_CAMERA_IMAGE = 11;// 拍照标识请求码
+
+    // 三个导航按钮
+    Button buttonOne;
+    Button buttonTwo;
+    Button buttonThree;
+
+    // 三个Fragment（页面）
+    ChatFragment chatFragment;
+    AlertFragment alertFragment;
+    ChatFragment thirdFragment;
+
+    // 页面以及按钮集合
+    List<Fragment> fragmentList;
+    List<Button> buttonList;
+
+    // 当前选中的项
+    int currentTab = -1;
+
+    // 页面容器
+    ViewPager mViewPager;
+
+    // 底部弹窗
+    PopupWindow popupWindow;
+
+    View keyword;
+    ImageView profile;
+
+    SharedPreferences sharedPreferences;
+    CommonService commonService;
+
+    int uid;
+    String mCurrentPhotoPath;
+    String mLastProfilePath;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.activity_main);
+        mContext = MainActivity.this;
+
+        // 动态申请权限
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA
+        }, RESULT_FIRST_USER);
+
+        // 未登录时跳转
+        sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
+        uid = sharedPreferences.getInt("uid", -1);
+        if (uid == -1) {
+            navigateTo(LoginActivity.class);
+            finish();
+        }
+
+        buttonOne = findViewById(R.id.btn_one);
+        buttonTwo = findViewById(R.id.btn_two);
+        buttonThree = findViewById(R.id.btn_three);
+        profile = findViewById(R.id.user);
+        keyword = findViewById(R.id.keywordButton);
+
+        buttonOne.setOnClickListener(this);
+        buttonTwo.setOnClickListener(this);
+        buttonThree.setOnClickListener(this);
+        profile.setOnClickListener(this);
+        keyword.setOnClickListener(this);
+        keyword.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    keyword.setBackground(getDrawable(R.color.colorText));
+                    keyword.setAlpha(0.3F);
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    keyword.setBackground(getDrawable(R.color.colorPrimary));
+                    keyword.setAlpha(1);
+                }
+                return false;
+            }
+        });
+
+        buttonList = new ArrayList<>();
+        buttonList.add(buttonOne);
+        buttonList.add(buttonTwo);
+        buttonList.add(buttonThree);
+
+        Bundle bundle = new Bundle();
+        bundle.putInt("tab", 0);
+        chatFragment = new ChatFragment();
+        chatFragment.setArguments(bundle);
+        alertFragment = new AlertFragment();
+        thirdFragment = new ChatFragment();
+
+        fragmentList = new ArrayList<>();
+        fragmentList.add(chatFragment);
+        fragmentList.add(alertFragment);
+        fragmentList.add(thirdFragment);
+
+        mViewPager = findViewById(R.id.viewpager);
+        mViewPager.setAdapter(new MyFragmentStatePagerAdapter(getSupportFragmentManager()));
+
+        commonService = new Retrofit.Builder()
+                .baseUrl("http://119.29.77.201/habit/")
+                .build()
+                .create(CommonService.class);
+
+        updateProfile();
+        changeView(0);
+
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_one:
+                changeView(0);
+                break;
+            case R.id.btn_two:
+                changeView(1);
+                break;
+            case R.id.btn_three:
+                changeView(2);
+                break;
+            case R.id.keywordButton:
+                navigateTo(KeywordActivity.class);
+                break;
+            case R.id.user:
+                showPopupWindow();
+                break;
+            case R.id.btn_pop_album:
+                Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(i, REQUEST_GALLERY_IMAGE);
+                popupWindow.dismiss();
+                break;
+            case R.id.btn_pop_camera:
+                takePhoto();
+                popupWindow.dismiss();
+                break;
+            case R.id.btn_pop_cancel:
+                navigateTo(LoginActivity.class);
+                popupWindow.dismiss();
+                break;
+            case R.id.timeButton:
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_GALLERY_IMAGE && null != data) {
+                Uri selectedImage = data.getData();
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+                Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+                cursor.moveToFirst();
+
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                final String picPath = cursor.getString(columnIndex);
+                uploadProfile(picPath);
+                cursor.close();
+            } else if (requestCode == REQUEST_CAMERA_IMAGE) {
+                // 上传前进行压缩
+                try {
+                    compressBitmap(BitmapFactory.decodeStream(new FileInputStream(new File(mCurrentPhotoPath))));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                uploadProfile(mCurrentPhotoPath);
+            }
+        }
+    }
+
+    /**
+     * 自定义ViewPager适配器。
+     */
+    class MyFragmentStatePagerAdapter extends FragmentStatePagerAdapter {
+
+        MyFragmentStatePagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return fragmentList.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return fragmentList.size();
+        }
+
+        @Override
+        public void startUpdate(@NonNull ViewGroup container) {
+            super.startUpdate(container);
+
+            // 更新按钮颜色
+            buttonOne.setTextColor(getColor(R.color.colorText));
+            buttonTwo.setTextColor(getColor(R.color.colorText));
+            buttonThree.setTextColor(getColor(R.color.colorText));
+            buttonList.get(mViewPager.getCurrentItem()).setTextColor(getColor(R.color.colorPrimary));
+        }
+
+        /**
+         * 每次更新完成ViewPager的内容后，调用该接口，此处复写主要是为了让导航按钮上层的覆盖层能够动态的移动
+         */
+        @Override
+        public void finishUpdate(ViewGroup container) {
+            super.finishUpdate(container);//这句话要放在最前面，否则会报错
+            //获取当前的视图是位于ViewGroup的第几个位置，用来更新对应的覆盖层所在的位置
+            int currentItem = mViewPager.getCurrentItem();
+            if (currentItem == currentTab) {
+                return;
+            }
+
+            currentTab = mViewPager.getCurrentItem();
+        }
+    }
+
+    //手动设置ViewPager要显示的视图
+    private void changeView(int desTab) {
+        mViewPager.setCurrentItem(desTab, true);
+    }
+
+    // 页面跳转
+    private void navigateTo(Class activity) {
+        Intent intent = new Intent(mContext, activity);
+        startActivity(intent);
+    }
+
+    // 更新头像
+    private void updateProfile() {
+        Call<ResponseBody> responseBodyCall = commonService.profile(uid);
+
+        responseBodyCall.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
+                String fileName = response.raw().headers().get("Content-Disposition");
+                if (fileName != null && fileName.contains("fileName=")) {
+                    fileName = "user_profile_" + fileName.substring(fileName.indexOf("=") + 1);
+
+                    //建立一个文件
+                    final File file = FileUtils.createFile(mContext, fileName);
+
+                    //下载文件后更新UI，放在UI线程
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            FileUtils.writeFile2Disk(response, file);
+
+                            Bitmap bitmap = null; //从本地取图片
+                            try {
+                                bitmap = BitmapFactory.decodeStream(new FileInputStream(file));
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
+                            profile.setImageBitmap(bitmap); //设置Bitmap为头像
+                            mLastProfilePath = file.getAbsolutePath();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                t.printStackTrace();
+            }
+        });
+    }
+
+    // 上传头像
+    private void uploadProfile(String picPath) {
+        final LoadingDialog loadingDialog = new LoadingDialog(this);
+        loadingDialog.setLoadingText("上传中,请稍等...")
+                .setSuccessText("上传成功")
+                .setFailedText("上传头像失败，请稍后再试！")
+                .setInterceptBack(true)
+                .setRepeatCount(0)
+                .show();
+
+        // 防止重复上传
+        if (picPath.equals(mLastProfilePath)) {
+            loadingDialog.setFailedText("请勿重复上传！");
+            loadingDialog.loadFailed();
+            return;
+        }
+
+        File file = new File(picPath);
+        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        MultipartBody.Part pic = MultipartBody.Part.createFormData("pic", file.getName(), requestFile);
+        Call<ResponseBody> call = commonService.uploadProfile(uid, pic);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                String json;
+                try {
+                    json = response.body().string();
+                    JSONObject jsonObject = JSONObject.parseObject(json);
+                    if (jsonObject.getInteger("retcode").equals(0)) {
+                        loadingDialog.loadSuccess();
+                        updateProfile();
+                    } else {
+                        loadingDialog.loadFailed();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    loadingDialog.loadFailed();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                loadingDialog.loadFailed();
+            }
+        });
+    }
+
+    // 弹窗选择相册或拍照
+    private void showPopupWindow() {
+        View popupView = View.inflate(mContext, R.layout.popupwindow_camera_need, null);
+        Button btn_album = popupView.findViewById(R.id.btn_pop_album);
+        Button btn_camera = popupView.findViewById(R.id.btn_pop_camera);
+        Button btn_cancel = popupView.findViewById(R.id.btn_pop_cancel);
+
+        btn_album.setOnClickListener(this);
+        btn_camera.setOnClickListener(this);
+        btn_cancel.setOnClickListener(this);
+
+        //获取屏幕宽高
+        int weight = getResources().getDisplayMetrics().widthPixels;
+        int height = getResources().getDisplayMetrics().heightPixels / 3;
+
+        popupWindow = new PopupWindow(popupView, weight, height);
+        popupWindow.setAnimationStyle(R.style.Animation_Design_BottomSheetDialog);
+        popupWindow.setFocusable(true);
+        //点击外部popupWindow消失
+        popupWindow.setOutsideTouchable(true);
+        //popupWindow消失屏幕变为不透明
+        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                WindowManager.LayoutParams lp = getWindow().getAttributes();
+                lp.alpha = 1.0F;
+                getWindow().setAttributes(lp);
+            }
+        });
+
+        //popupWindow出现屏幕变为半透明
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.alpha = 0.2F;
+        getWindow().setAttributes(lp);
+        popupWindow.showAtLocation(popupView, Gravity.BOTTOM, 0, 10);
+    }
+
+    // 调用摄像头
+    private void takePhoto() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(mContext.getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photo = FileUtils.createImageFile();
+            // Continue only if the File was successfully created
+            if (photo != null) {
+                // api24后需要使用FileProvider
+                mCurrentPhotoPath = photo.getAbsolutePath();
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(mContext, "com.kowah.fileprovider", photo));
+            }
+        }
+
+        startActivityForResult(takePictureIntent, MainActivity.REQUEST_CAMERA_IMAGE);//跳转界面传回拍照所得数据
+    }
+
+    //将bitmap压缩转化为jpg格式
+    public void compressBitmap(Bitmap mBitmap) {
+        try {
+            File photo = FileUtils.createImageFile();
+            mCurrentPhotoPath = photo.getAbsolutePath();
+
+            FileOutputStream out = new FileOutputStream(photo);
+            mBitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @CallSuper
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            View view = getCurrentFocus();
+            if (isShouldHideKeyBord(view, event)) {
+                hideSoftInput(view.getWindowToken());
+            }
+        }
+        return super.dispatchTouchEvent(event);
+    }
+
+    //判定当前是否需要隐藏
+    protected boolean isShouldHideKeyBord(View v, MotionEvent event) {
+        if (v instanceof EditText) {
+            int[] l = {0, 0};
+            v.getLocationInWindow(l);
+            int left = l[0], top = l[1], bottom = top + v.getHeight(), right = left + v.getWidth();
+            return !(event.getX() > left && event.getX() < right && event.getY() > top && event.getY() < bottom);
+            //return !(ev.getY() > top && ev.getY() < bottom);
+        }
+        return false;
+    }
+
+    // 隐藏软键盘
+    private void hideSoftInput(IBinder token) {
+        if (token != null) {
+            InputMethodManager manager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            manager.hideSoftInputFromWindow(token, InputMethodManager.HIDE_NOT_ALWAYS);
+        }
+    }
+
+}

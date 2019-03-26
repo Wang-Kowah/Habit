@@ -1,0 +1,110 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="144px"
+        android:background="@color/colorPrimary">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/user"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:layout_marginStart="40px"
+            android:src="@mipmap/peiqixxxhdpi"
+            app:civ_border_color="#fff"
+            app:civ_border_width="2px" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="325px"
+            android:text="习惯"
+            android:textColor="@color/white"
+            android:textSize="55px" />
+
+        <View
+            android:layout_width="210px"
+            android:layout_height="wrap_content" />
+
+        <RelativeLayout
+            android:id="@+id/keywordButton"
+            android:layout_width="280px"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="150px"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="110px"
+                android:text="关键词"
+                android:textColor="@color/white"
+                android:textSize="50px" />
+
+            <ImageView
+                android:layout_width="35px"
+                android:layout_height="50px"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="80px"
+                android:src="@mipmap/jump1xhdpi" />
+        </RelativeLayout>
+
+    </android.support.v7.widget.Toolbar>
+
+    <!-- 三个导航按钮 -->
+    <LinearLayout
+        android:id="@+id/ll_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="110px"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="144px"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_one"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/fragmentBack"
+            android:text="每天总结"
+            android:textColor="@color/colorPrimary"
+            android:textSize="51px" />
+
+        <Button
+            android:id="@+id/btn_two"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/fragmentBack"
+            android:text="早上复习"
+            android:textColor="@color/colorText"
+            android:textSize="51px" />
+
+        <Button
+            android:id="@+id/btn_three"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/fragmentBack"
+            android:text="每周总结"
+            android:textColor="@color/colorText"
+            android:textSize="51px" />
+
+    </LinearLayout>
+
+    <!-- VIewPager 主要是加载内容的 -->
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/ll_tabs" />
+
+</RelativeLayout>

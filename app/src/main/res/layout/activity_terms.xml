@@ -1,0 +1,54 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".KeywordActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="144px"
+        android:layout_marginLeft="-40px"
+        android:background="@color/colorPrimary">
+
+        <LinearLayout
+            android:id="@+id/returnbutton2"
+            android:layout_width="144px"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="25px"
+            android:paddingVertical="25px">
+
+            <ImageView
+                android:layout_width="60px"
+                android:layout_height="60px"
+                android:layout_marginTop="15px"
+                android:layout_marginLeft="25px"
+                android:src="@mipmap/returnxxxhdpi" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="310px"
+            android:text="用户条款"
+            android:textColor="@color/white"
+            android:textSize="55px" />
+
+    </android.support.v7.widget.Toolbar>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="144px">
+
+        <TextView
+            android:id="@+id/terms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="25px"
+            android:layout_marginRight="10px"
+            android:textSize="16sp" />
+    </ScrollView>
+
+</RelativeLayout>
