@@ -3,32 +3,45 @@ package com.kowah.habit.fragment;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.provider.AlarmClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.kowah.habit.LoginActivity;
 import com.kowah.habit.R;
 import com.kowah.habit.service.CommonService;
+import com.kowah.habit.utils.DateUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 
 import okhttp3.ResponseBody;
@@ -41,15 +54,29 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class ChatFragment extends Fragment {
 
+    SharedPreferences sharedPreferences;
+    CommonService commonService;
+    MsgAdapter adapter;
+    RecyclerView recyclerView;
+    SwipeRefreshLayout swipeRefreshLayout;
+
+    LinkedList<String> msgList;
+    LinkedList<Long> dateList;
+
     // 当前页面
     int currentTab = -1;
+    // 上次更新消息列表的时间
+    long mLastUpdateMsg = -1;
+    int uid;
 
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, final Bundle savedInstanceState) {
+        msgList = new LinkedList<>();
+        dateList = new LinkedList<>();
 
-        final SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_data", MODE_PRIVATE);
+        sharedPreferences = getActivity().getSharedPreferences("user_data", MODE_PRIVATE);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
 
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
@@ -121,8 +148,15 @@ public class ChatFragment extends Fragment {
             System.out.println("week fragment created");
         }
 
+        mLastUpdateMsg = System.currentTimeMillis() / 1000;
+        uid = sharedPreferences.getInt("uid", -1);
+        commonService = new Retrofit.Builder()
+                .baseUrl("http://119.29.77.201/habit/")
+                .build()
+                .create(CommonService.class);
+
         final EditText editText = view.findViewById(R.id.input_node);
-        // 动态设置行数来避免EditText在多行状态下对ImeOptions的强制修改
+        // 动态设置行数来避免EditText在多行状态下对ImeOptions的强制修改导致回车键修改失败
         editText.setMaxLines(5);
         editText.setHorizontallyScrolling(false);
         editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -134,14 +168,11 @@ public class ChatFragment extends Fragment {
                     String input = v.getText().toString();
                     if (!input.equals("")) {
                         v.setText("");
-
-                        CommonService commonService = new Retrofit.Builder()
-                                .baseUrl("http://119.29.77.201/habit/")
-                                .build()
-                                .create(CommonService.class);
+                        // 手动更新消息列表
+//                        msgList.addFirst(input);
+//                        dateList.addFirst(System.currentTimeMillis() / 1000);
 
                         Call<ResponseBody> call = null;
-                        int uid = sharedPreferences.getInt("uid", -1);
                         switch (currentTab) {
                             case 0:
                                 call = commonService.sendNote(uid, 0, input);
@@ -162,6 +193,9 @@ public class ChatFragment extends Fragment {
                                     if (!jsonObject.getInteger("retcode").equals(0)) {
                                         Toast.makeText(getContext(), jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
                                     }
+
+                                    updateMsg(false);
+                                    mLastUpdateMsg = System.currentTimeMillis() / 1000;
                                 } catch (IOException e) {
                                     Toast.makeText(getContext(), "网络异常，请稍后重试", Toast.LENGTH_SHORT).show();
                                     e.printStackTrace();
@@ -180,6 +214,24 @@ public class ChatFragment extends Fragment {
             }
         });
 
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        linearLayoutManager.setReverseLayout(true);
+        linearLayoutManager.setStackFromEnd(true);
+        adapter = new MsgAdapter(getContext(), msgList, dateList);
+        recyclerView = view.findViewById(R.id.chatRecyclerView);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setAdapter(adapter);
+
+        swipeRefreshLayout = view.findViewById(R.id.swipe);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                updateMsg(false);
+            }
+        });
+
+        updateMsg(true);
 
         return view;
     }
@@ -228,6 +280,139 @@ public class ChatFragment extends Fragment {
         if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
             startActivity(intent);
         }
+    }
+
+    // 自定义RecyclerViewAdapter
+    class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.ViewHolder> {
+        private Context context;
+        private List<String> msgList;
+        private List<Long> dateList;
+
+        MsgAdapter(Context context, List<String> msgList, List<Long> dateList) {
+            this.context = context;
+            this.msgList = msgList;
+            this.dateList = dateList;
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_chat, parent, false);
+            return new ViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
+            holder.msg.setText(msgList.get(position));
+
+            // 确定昨天跟今天的时间显示格式
+            long date = dateList.get(position) * 1000L;
+            if (date > DateUtils.getDayBeginTimestamp(System.currentTimeMillis(), 1) && date < DateUtils.getDayBeginTimestamp(System.currentTimeMillis(), 0)) {
+                holder.msgDate.setText("昨天 " + DateUtils.formatDate(date, "HH:mm"));
+            } else if (date > DateUtils.getDayBeginTimestamp(System.currentTimeMillis(), 0)) {
+                holder.msgDate.setText(DateUtils.formatDate(date, "HH:mm"));
+            } else {
+                holder.msgDate.setText(DateUtils.formatDate(date));
+            }
+
+            File file = new File(sharedPreferences.getString("mLastProfilePath", ""));
+            if (file.exists()) {
+                Bitmap bitmap = null; //从本地取图片
+                try {
+                    bitmap = BitmapFactory.decodeStream(new FileInputStream(file));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                holder.profile.setImageBitmap(bitmap); //设置Bitmap为头像
+            }
+
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    System.out.println(position);
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return msgList.size();
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+
+            private TextView msg;
+            private TextView msgDate;
+            private ImageView profile;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                msg = itemView.findViewById(R.id.msg);
+                msgDate = itemView.findViewById(R.id.msgDate);
+                profile = itemView.findViewById(R.id.chatProfile);
+            }
+        }
+    }
+
+    // 更新列表
+    private void updateMsg(final boolean doInit) {
+        Call<ResponseBody> call = null;
+        switch (currentTab) {
+            case 0:
+                call = commonService.noteList(uid, 0);
+                break;
+            case 2:
+                call = commonService.noteList(uid, 1);
+                break;
+            default:
+                break;
+        }
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                String json;
+                try {
+                    json = response.body().string();
+                    JSONObject jsonObject = JSONObject.parseObject(json);
+                    if (!jsonObject.getInteger("retcode").equals(0)) {
+                        Toast.makeText(getContext(), jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
+                    } else {
+                        mLastUpdateMsg = System.currentTimeMillis() / 1000;
+
+                        JSONArray jsonArray = jsonObject.getJSONArray("noteList");
+                        for (int i = 0; i < jsonArray.size(); i++) {
+                            JSONObject object = jsonArray.getJSONObject(i);
+                            if (doInit) {
+                                msgList.add(object.getString("content"));
+                                dateList.add(object.getLongValue("createTime"));
+
+                                //有消息刷新显示
+                                adapter.notifyItemInserted(0);
+                                recyclerView.scrollToPosition(0);
+                            } else if (object.getLongValue("createTime") > mLastUpdateMsg) {
+                                msgList.addFirst(object.getString("content"));
+                                dateList.addFirst(object.getLongValue("createTime"));
+
+                                //有消息刷新显示
+                                adapter.notifyItemInserted(0);
+                                recyclerView.scrollToPosition(0);
+                            } else {
+                                Toast.makeText(getContext(), "暂无新消息", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(getContext(), "网络异常，请稍后重试", Toast.LENGTH_SHORT).show();
+                t.printStackTrace();
+            }
+        });
     }
 
 }

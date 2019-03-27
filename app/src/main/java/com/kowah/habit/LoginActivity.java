@@ -147,7 +147,6 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
                     System.out.println("fail, " + t.getMessage());
-                    Toast.makeText(LoginActivity.this, "网络异常，请稍后重试", Toast.LENGTH_SHORT).show();
                 }
             });
             countDownTimer.start();
