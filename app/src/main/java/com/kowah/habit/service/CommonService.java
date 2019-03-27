@@ -39,10 +39,10 @@ public interface CommonService {
 
     @FormUrlEncoded
     @POST("user/sendNote")
-    Call<ResponseBody> sendNote(@Field("uid") int uid, @Field("type") int type,@Field("msg")String msg);
+    Call<ResponseBody> sendNote(@Field("uid") int uid, @Field("type") int type, @Field("msg") String msg);
 
     @GET("user/noteList")
-    Call<ResponseBody> noteList(@Query("uid") int uid,@Query("type") int type);
+    Call<ResponseBody> noteList(@Query("uid") int uid, @Query("type") int type);
 
     @Multipart
     @POST("user/uploadProfile")
@@ -51,9 +51,15 @@ public interface CommonService {
     @GET("user/profile")
     Call<ResponseBody> profile(@Query("uid") int uid);
 
+    @GET("user/dayKeyword")
+    Call<ResponseBody> dayKeyword(@Query("uid") int uid);
+
+    @GET("user/keyword")
+    Call<ResponseBody> keyword(@Query("uid") int uid, @Query("type") int type);
+
 }
 
-class Test{
+class Test {
     public static void main(String[] args) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://119.29.77.201/habit/")
@@ -76,7 +82,7 @@ class Test{
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                System.out.println("fail, "+t.getMessage());
+                System.out.println("fail, " + t.getMessage());
             }
         });
     }

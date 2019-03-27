@@ -354,7 +354,7 @@ public class ChatFragment extends Fragment {
     }
 
     // 更新列表
-    private void updateMsg(final boolean doInit) {
+    private void updateMsg(final boolean firstLoad) {
         Call<ResponseBody> call = null;
         switch (currentTab) {
             case 0:
@@ -376,32 +376,42 @@ public class ChatFragment extends Fragment {
                     if (!jsonObject.getInteger("retcode").equals(0)) {
                         Toast.makeText(getContext(), jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
                     } else {
+                        int hasNewMsg = 0;
                         mLastUpdateMsg = System.currentTimeMillis() / 1000;
 
                         JSONArray jsonArray = jsonObject.getJSONArray("noteList");
                         for (int i = 0; i < jsonArray.size(); i++) {
                             JSONObject object = jsonArray.getJSONObject(i);
-                            if (doInit) {
+                            if (firstLoad) {
+                                // 首次加载条数
+//                                if (i == 10) {
+//                                    // 手动更新时可设置为10条前的时间使每次只更新10条
+//                                    mLastUpdateMsg = 0;
+//                                    break;
+//                                }
+
                                 msgList.add(object.getString("content"));
                                 dateList.add(object.getLongValue("createTime"));
 
-                                //有消息刷新显示
+                                //有消息刷新时显示，不在更新数据的同一线程调用会引发RecyclerView自身bug
                                 adapter.notifyItemInserted(0);
                                 recyclerView.scrollToPosition(0);
+                                hasNewMsg = 1;
                             } else if (object.getLongValue("createTime") > mLastUpdateMsg) {
                                 msgList.addFirst(object.getString("content"));
                                 dateList.addFirst(object.getLongValue("createTime"));
 
-                                //有消息刷新显示
+                                //有消息刷新时显示，不在更新数据的同一线程调用会引发RecyclerView自身bug
                                 adapter.notifyItemInserted(0);
                                 recyclerView.scrollToPosition(0);
-                            } else {
-                                Toast.makeText(getContext(), "暂无新消息", Toast.LENGTH_SHORT).show();
+                                hasNewMsg = 1;
                             }
                         }
-
-                        swipeRefreshLayout.setRefreshing(false);
+                        if (hasNewMsg == 0) {
+                            Toast.makeText(getContext(), "没有更多消息啦", Toast.LENGTH_SHORT).show();
+                        }
                     }
+                    swipeRefreshLayout.setRefreshing(false);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

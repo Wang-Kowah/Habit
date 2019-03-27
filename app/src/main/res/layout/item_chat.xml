@@ -42,6 +42,7 @@
                 android:padding="10px"
                 android:text="周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日"
                 android:textColor="@color/colorText"
+                android:textIsSelectable="true"
                 android:textSize="18sp" />
         </LinearLayout>
 

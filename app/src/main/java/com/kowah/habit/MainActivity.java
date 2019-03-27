@@ -252,9 +252,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         return super.dispatchTouchEvent(event);
     }
 
-    /**
-     * 自定义ViewPager适配器。
-     */
+    // 自定义ViewPager适配器
     class MyFragmentStatePagerAdapter extends FragmentStatePagerAdapter {
 
         MyFragmentStatePagerAdapter(FragmentManager fm) {
@@ -282,13 +280,11 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             buttonList.get(mViewPager.getCurrentItem()).setTextColor(getColor(R.color.colorPrimary));
         }
 
-        /**
-         * 每次更新完成ViewPager的内容后，调用该接口，此处复写主要是为了让导航按钮上层的覆盖层能够动态的移动
-         */
+        // 每次更新完成ViewPager的内容后，调用该接口，此处复写主要是为了让导航按钮上层的覆盖层能够动态的移动
         @Override
         public void finishUpdate(ViewGroup container) {
-            super.finishUpdate(container);//这句话要放在最前面，否则会报错
-            //获取当前的视图是位于ViewGroup的第几个位置，用来更新对应的覆盖层所在的位置
+            super.finishUpdate(container);// 这句话要放在最前面，否则会报错
+            // 获取当前的视图是位于ViewGroup的第几个位置，用来更新对应的覆盖层所在的位置
             int currentItem = mViewPager.getCurrentItem();
             if (currentItem == currentTab) {
                 return;

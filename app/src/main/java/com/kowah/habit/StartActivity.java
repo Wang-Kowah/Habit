@@ -1,11 +1,18 @@
 package com.kowah.habit;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.os.CountDownTimer;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.view.View;
+import android.widget.TextView;
+
+import com.kowah.habit.utils.DateUtils;
 
 public class StartActivity extends AppCompatActivity {
 
@@ -15,16 +22,22 @@ public class StartActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
         setContentView(R.layout.activity_start);
-        handler.sendEmptyMessageDelayed(0, 3000);
-    }
 
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
+        TextView skipButton = findViewById(R.id.skip_button);
+        skipButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getHome();
+            }
+        });
+
+        if (DateUtils.isMonday(System.currentTimeMillis())) {
+            CountDownTimer countDownTimer = new CountDownTimerUtils(skipButton, 5000, 1000);
+            countDownTimer.start();
+        } else {
             getHome();
-            super.handleMessage(msg);
         }
-    };
+    }
 
     private void getHome() {
         Intent intent = new Intent(StartActivity.this, MainActivity.class);
@@ -32,4 +45,33 @@ public class StartActivity extends AppCompatActivity {
         finish();
     }
 
+    public class CountDownTimerUtils extends CountDownTimer {
+        private TextView mTextView;
+
+        /**
+         * @param millisInFuture    The number of millis in the future from the call
+         *                          to {@link #start()} until the countdown is done and {@link #onFinish()}
+         *                          is called.
+         * @param countDownInterval The interval along the way to receive
+         *                          {@link #onTick(long)} callbacks.
+         */
+        public CountDownTimerUtils(TextView textView, long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+            this.mTextView = textView;
+        }
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+            mTextView.setText(millisUntilFinished / 1000 + "秒跳过"); //设置倒计时时间
+            SpannableString spannableString = new SpannableString(mTextView.getText().toString());
+            ForegroundColorSpan span = new ForegroundColorSpan(Color.WHITE);
+            spannableString.setSpan(span, 0, 1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+            mTextView.setText(spannableString);
+        }
+
+        @Override
+        public void onFinish() {
+            getHome();
+        }
+    }
 }

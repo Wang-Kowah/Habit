@@ -4,7 +4,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 public class DateUtils {
 
@@ -112,10 +111,9 @@ public class DateUtils {
         return c.getTimeInMillis();
     }
 
-    public static void main(String[] args) {
-        System.out.println(formatDate(1553666951L*1000, "yyyy/MM/dd HH:mm:ss:SSS"));
-        System.out.println(getDayBeginTimestamp(System.currentTimeMillis(), 1));
-        System.out.println(getDayBeginTimestamp(System.currentTimeMillis(), 0));
+    public static boolean isMonday(long timestamp) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date(timestamp));
+        return Calendar.MONDAY == c.get(Calendar.DAY_OF_WEEK);
     }
-
 }
