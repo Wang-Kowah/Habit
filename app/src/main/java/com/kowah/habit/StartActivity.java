@@ -1,6 +1,7 @@
 package com.kowah.habit;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -23,17 +24,27 @@ public class StartActivity extends AppCompatActivity {
         actionBar.hide();
         setContentView(R.layout.activity_start);
 
-        TextView skipButton = findViewById(R.id.skip_button);
-        skipButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getHome();
-            }
-        });
+        SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        long mLastOpenApp = sharedPreferences.getLong("mLastOpenApp", -1);
+        long now = System.currentTimeMillis();
 
-        if (DateUtils.isMonday(System.currentTimeMillis())) {
+        // 只在每周一出现一次
+        if (DateUtils.isMonday(now) && mLastOpenApp < DateUtils.getDayBeginTimestamp(now, 0)) {
+
+            TextView skipButton = findViewById(R.id.skip_button);
+            skipButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getHome();
+                }
+            });
+
             CountDownTimer countDownTimer = new CountDownTimerUtils(skipButton, 5000, 1000);
             countDownTimer.start();
+
+            editor.putLong("mLastOpenApp", now);
+            editor.apply();
         } else {
             getHome();
         }

@@ -80,7 +80,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                 signUp();
                 break;
             case R.id.termsbutton:
-                navigateTo(TermsActivity.class);
+                navigateTo(ProtocolActivity.class);
                 break;
             default:
                 break;
