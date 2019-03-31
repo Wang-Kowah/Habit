@@ -16,7 +16,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Query;
 
-public interface CommonService {
+public interface RetrofitService {
 
     @FormUrlEncoded
     @POST("user/getVerifyCode")
@@ -42,7 +42,7 @@ public interface CommonService {
     Call<ResponseBody> sendNote(@Field("uid") int uid, @Field("type") int type, @Field("msg") String msg);
 
     @GET("user/noteList")
-    Call<ResponseBody> noteList(@Query("uid") int uid, @Query("type") int type);
+    Call<ResponseBody> noteList(@Query("uid") int uid, @Query("type") int type, @Query("pageNum") int pageNum, @Query("pageSize") int pageSize);
 
     @Multipart
     @POST("user/uploadProfile")
@@ -52,10 +52,10 @@ public interface CommonService {
     Call<ResponseBody> profile(@Query("uid") int uid);
 
     @GET("user/dayKeyword")
-    Call<ResponseBody> dayKeyword(@Query("uid") int uid);
+    Call<ResponseBody> dayKeyword(@Query("uid") int uid, @Query("pageNum") int pageNum, @Query("pageSize") int pageSize);
 
     @GET("user/keyword")
-    Call<ResponseBody> keyword(@Query("uid") int uid, @Query("type") int type);
+    Call<ResponseBody> keyword(@Query("uid") int uid, @Query("type") int type, @Query("pageNum") int pageNum, @Query("pageSize") int pageSize);
 
 }
 
@@ -65,8 +65,8 @@ class Test {
                 .baseUrl("http://119.29.77.201/habit/")
                 .build();
 
-        CommonService commonService = retrofit.create(CommonService.class);
-        Call<ResponseBody> call = commonService.info(2);
+        RetrofitService retrofitService = retrofit.create(RetrofitService.class);
+        Call<ResponseBody> call = retrofitService.info(2);
 
         // 发送网络请求(异步)
         call.enqueue(new Callback<ResponseBody>() {

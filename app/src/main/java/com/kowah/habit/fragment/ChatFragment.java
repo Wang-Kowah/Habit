@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.AlarmClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -31,7 +32,7 @@ import android.widget.Toast;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.kowah.habit.R;
-import com.kowah.habit.service.CommonService;
+import com.kowah.habit.service.RetrofitService;
 import com.kowah.habit.utils.DateUtils;
 
 import java.io.File;
@@ -55,7 +56,7 @@ import static android.content.Context.MODE_PRIVATE;
 public class ChatFragment extends Fragment {
 
     SharedPreferences sharedPreferences;
-    CommonService commonService;
+    RetrofitService retrofitService;
     MsgAdapter adapter;
     RecyclerView recyclerView;
     SwipeRefreshLayout swipeRefreshLayout;
@@ -65,14 +66,18 @@ public class ChatFragment extends Fragment {
 
     // 当前页面
     int currentTab = -1;
-    // 上次更新消息列表的时间
-    long mLastUpdateMsg = -1;
+    // 每次更新的消息条数
+    int pageSize = 10;
+    int pageNum;
     int uid;
+    int sentMsgNum;
 
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, final Bundle savedInstanceState) {
+        pageNum = 1;
+        sentMsgNum = 0;
         msgList = new LinkedList<>();
         dateList = new LinkedList<>();
 
@@ -152,15 +157,14 @@ public class ChatFragment extends Fragment {
             System.out.println("week fragment created");
         }
 
-        mLastUpdateMsg = System.currentTimeMillis() / 1000;
         uid = sharedPreferences.getInt("uid", -1);
-        commonService = new Retrofit.Builder()
+        retrofitService = new Retrofit.Builder()
                 .baseUrl("http://119.29.77.201/habit/")
                 .build()
-                .create(CommonService.class);
+                .create(RetrofitService.class);
 
         final EditText editText = view.findViewById(R.id.input_node);
-        // 动态设置行数来避免EditText在多行状态下对ImeOptions的强制修改导致回车键修改失败
+        // 动态设置行数来避免EditText在多行状态下对ImeOptions的强制设置导致回车键样式修改失败
         editText.setMaxLines(5);
         editText.setHorizontallyScrolling(false);
         editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -169,20 +173,23 @@ public class ChatFragment extends Fragment {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEND || actionId == EditorInfo.IME_ACTION_DONE
                         || (event != null && KeyEvent.KEYCODE_ENTER == event.getKeyCode() && KeyEvent.ACTION_DOWN == event.getAction())) {
-                    String input = v.getText().toString();
+                    final String input = v.getText().toString();
                     if (!input.equals("")) {
                         v.setText("");
                         // 手动更新消息列表
-//                        msgList.addFirst(input);
-//                        dateList.addFirst(System.currentTimeMillis() / 1000);
+                        msgList.addFirst(input);
+                        dateList.addFirst(System.currentTimeMillis() / 1000);
+                        adapter.notifyItemInserted(0);
+                        recyclerView.scrollToPosition(0);
+                        sentMsgNum++;
 
                         Call<ResponseBody> call = null;
                         switch (currentTab) {
                             case 0:
-                                call = commonService.sendNote(uid, 0, input);
+                                call = retrofitService.sendNote(uid, 0, input);
                                 break;
                             case 2:
-                                call = commonService.sendNote(uid, 1, input);
+                                call = retrofitService.sendNote(uid, 1, input);
                                 break;
                             default:
                                 break;
@@ -200,8 +207,7 @@ public class ChatFragment extends Fragment {
                                         toast.show();
                                     }
 
-                                    updateMsg(false);
-                                    mLastUpdateMsg = System.currentTimeMillis() / 1000;
+//                                    updateMsg(false);
                                 } catch (IOException e) {
                                     Toast toast = Toast.makeText(getContext(), "网络异常，请稍后重试", Toast.LENGTH_SHORT);
                                     toast.setText("网络异常，请稍后重试");
@@ -237,11 +243,11 @@ public class ChatFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                updateMsg(false);
+                updateMsg();
             }
         });
 
-        updateMsg(true);
+        updateMsg();
 
         return view;
     }
@@ -365,14 +371,14 @@ public class ChatFragment extends Fragment {
     }
 
     // 更新列表
-    private void updateMsg(final boolean firstLoad) {
+    private void updateMsg() {
         Call<ResponseBody> call = null;
         switch (currentTab) {
             case 0:
-                call = commonService.noteList(uid, 0);
+                call = retrofitService.noteList(uid, 0, pageNum++, pageSize);
                 break;
             case 2:
-                call = commonService.noteList(uid, 1);
+                call = retrofitService.noteList(uid, 1, pageNum++, pageSize);
                 break;
             default:
                 break;
@@ -389,44 +395,33 @@ public class ChatFragment extends Fragment {
                         toast.setText(jsonObject.getString("msg"));
                         toast.show();
                     } else {
-                        int hasNewMsg = 0;
-                        mLastUpdateMsg = System.currentTimeMillis() / 1000;
-
-                        JSONArray jsonArray = jsonObject.getJSONArray("noteList");
-                        for (int i = 0; i < jsonArray.size(); i++) {
-                            JSONObject object = jsonArray.getJSONObject(i);
-                            if (firstLoad) {
-                                // 首次加载条数
-//                                if (i == 10) {
-//                                    // 手动更新时可设置为10条前的时间使每次只更新10条
-//                                    mLastUpdateMsg = 0;
-//                                    break;
-//                                }
-
-                                msgList.add(object.getString("content"));
-                                dateList.add(object.getLongValue("createTime"));
-
-                                //有消息刷新时显示，不在更新数据的同一线程调用会引发RecyclerView自身bug
-                                adapter.notifyItemInserted(0);
-                                recyclerView.scrollToPosition(0);
-                                hasNewMsg = 1;
-                            } else if (object.getLongValue("createTime") > mLastUpdateMsg) {
-                                msgList.addFirst(object.getString("content"));
-                                dateList.addFirst(object.getLongValue("createTime"));
-
-                                //有消息刷新时显示，不在更新数据的同一线程调用会引发RecyclerView自身bug
-                                adapter.notifyItemInserted(0);
-                                recyclerView.scrollToPosition(0);
-                                hasNewMsg = 1;
-                            }
-                        }
-                        if (hasNewMsg == 0) {
+                        if (jsonObject.getJSONObject("noteList").getIntValue("total") == msgList.size()) {
                             Toast toast = Toast.makeText(getContext(), "没有更多消息啦", Toast.LENGTH_SHORT);
                             toast.setText("没有更多消息啦");
                             toast.show();
+                        } else {
+                            JSONArray jsonArray = jsonObject.getJSONObject("noteList").getJSONArray("list");
+                            for (int i = 0; i < jsonArray.size(); i++) {
+                                JSONObject object = jsonArray.getJSONObject(i);
+
+                                // 排除发送新消息后拉取到的重复数据
+                                if (! dateList.contains(object.getLongValue("createTime"))) {
+                                    msgList.add(object.getString("content"));
+                                    dateList.add(object.getLongValue("createTime"));
+
+                                    //有消息刷新时显示，不在更新数据的同一线程调用会引发RecyclerView自身bug
+                                    adapter.notifyItemInserted(msgList.size() - 1 + sentMsgNum);
+                                    recyclerView.scrollToPosition(msgList.size() - jsonArray.size());
+                                }
+                            }
                         }
                     }
-                    swipeRefreshLayout.setRefreshing(false);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            swipeRefreshLayout.setRefreshing(false);
+                        }
+                    }, 600);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

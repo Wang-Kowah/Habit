@@ -3,6 +3,7 @@ package com.kowah.habit;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,7 +18,7 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.kowah.habit.service.CommonService;
+import com.kowah.habit.service.RetrofitService;
 import com.kowah.habit.utils.DateUtils;
 
 import java.io.IOException;
@@ -45,14 +46,15 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
     RefreshAdapter adapter;
 
     SharedPreferences sharedPreferences;
-    CommonService commonService;
+    RetrofitService retrofitService;
 
     ArrayList<Integer> dateList;
     ArrayList<String> keywords;
     // 当前页面
     int currentTab = -1;
     // 上次更新关键词列表的日期
-    int mLastUpdateKeyword = 0;
+    int mLastUpdateKeyword = 20190401;
+    int pageNum;
     int uid;
 
     @Override
@@ -95,10 +97,10 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
         buttonList.add(buttonTwo);
         buttonList.add(buttonThree);
 
-        commonService = new Retrofit.Builder()
+        retrofitService = new Retrofit.Builder()
                 .baseUrl("http://119.29.77.201/habit/")
                 .build()
-                .create(CommonService.class);
+                .create(RetrofitService.class);
 
         updateActivity(0);
     }
@@ -124,6 +126,7 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void updateActivity(int tab) {
+        pageNum = 1;
         currentTab = tab;
         buttonOne.setTextColor(getColor(R.color.colorText));
         buttonTwo.setTextColor(getColor(R.color.colorText));
@@ -159,23 +162,23 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
                 //判断RecyclerView的状态为空闲，同时是最后一个可见item时才加载
                 if (newState == RecyclerView.SCROLL_STATE_IDLE && lastVisibleItem + 1 == adapter.getItemCount()) {
                     adapter.setFooterVisibility(View.VISIBLE);
-                    updateMsg(false);
+                    updateMsg();
                 }
             }
         });
 
-        updateMsg(true);
+        updateMsg();
     }
 
     // 刷新
-    void updateMsg(final boolean firstLoad) {
+    void updateMsg() {
         Call<ResponseBody> call;
         switch (currentTab) {
             case 0:
-                call = commonService.dayKeyword(uid);
+                call = retrofitService.dayKeyword(uid, pageNum++, 10);
                 break;
             default:
-                call = commonService.keyword(uid, currentTab);
+                call = retrofitService.keyword(uid, currentTab, pageNum++, 5);
                 break;
         }
         call.enqueue(new Callback<ResponseBody>() {
@@ -192,37 +195,40 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
                     } else {
                         mLastUpdateKeyword = Integer.parseInt(DateUtils.formatDate(System.currentTimeMillis(), "yyyyMMdd"));
 
-                        JSONArray jsonArray;
+
+                        JSONObject result;
                         switch (currentTab) {
                             case 0:
-                                jsonArray = jsonObject.getJSONArray("dayKeywordList");
+                                result = jsonObject.getJSONObject("dayKeywordList");
                                 break;
                             default:
-                                jsonArray = jsonObject.getJSONArray("keywordList");
+                                result = jsonObject.getJSONObject("keywordList");
                                 break;
                         }
-                        int hasNewMsg = 0;
-                        for (int i = 0; i < jsonArray.size(); i++) {
-                            JSONObject object = jsonArray.getJSONObject(i);
-                            ArrayList<Integer> dates = new ArrayList<>();
-                            ArrayList<String> keys = new ArrayList<>();
-                            if (firstLoad || object.getIntValue("date") > mLastUpdateKeyword) {
+                        if (result.getIntValue("total") == dateList.size()) {
+                            Toast toast = Toast.makeText(KeywordActivity.this, "没有更多消息啦", Toast.LENGTH_SHORT);
+                            toast.setText("没有更多消息啦");
+                            toast.show();
+                        } else {
+                            JSONArray jsonArray = result.getJSONArray("list");
+                            for (int i = 0; i < jsonArray.size(); i++) {
+                                JSONObject object = jsonArray.getJSONObject(i);
+                                ArrayList<Integer> dates = new ArrayList<>();
+                                ArrayList<String> keys = new ArrayList<>();
                                 keys.add(object.getString("keywords"));
                                 dates.add(object.getIntValue("date"));
 
                                 adapter.addFooterItem(dates, keys);
-                                hasNewMsg = 1;
-
 //                                recyclerView.scrollToPosition(dateList.size() - 1);
                             }
                         }
-                        if (hasNewMsg == 0) {
-                            Toast toast = Toast.makeText(KeywordActivity.this, "没有更多消息啦", Toast.LENGTH_SHORT);
-                            toast.setText("没有更多消息啦");
-                            toast.show();
-                        }
                     }
-                    adapter.setFooterVisibility(View.GONE);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            adapter.setFooterVisibility(View.GONE);
+                        }
+                    }, 1200);
                 } catch (IOException e) {
                     Toast toast = Toast.makeText(KeywordActivity.this, "网络异常，请稍后重试", Toast.LENGTH_SHORT);
                     toast.setText("网络异常，请稍后重试");

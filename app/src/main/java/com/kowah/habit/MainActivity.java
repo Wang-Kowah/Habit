@@ -37,7 +37,7 @@ import android.widget.PopupWindow;
 import com.alibaba.fastjson.JSONObject;
 import com.kowah.habit.fragment.AlarmFragment;
 import com.kowah.habit.fragment.ChatFragment;
-import com.kowah.habit.service.CommonService;
+import com.kowah.habit.service.RetrofitService;
 import com.kowah.habit.utils.FileUtils;
 import com.xiasuhuei321.loadingdialog.view.LoadingDialog;
 
@@ -91,7 +91,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     ImageView profile;
 
     SharedPreferences sharedPreferences;
-    CommonService commonService;
+    RetrofitService retrofitService;
 
     int uid;
     String mCurrentPhotoPath;
@@ -165,10 +165,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         mViewPager = findViewById(R.id.viewpager);
         mViewPager.setAdapter(new MyFragmentStatePagerAdapter(getSupportFragmentManager()));
 
-        commonService = new Retrofit.Builder()
+        retrofitService = new Retrofit.Builder()
                 .baseUrl("http://119.29.77.201/habit/")
                 .build()
-                .create(CommonService.class);
+                .create(RetrofitService.class);
 
         updateProfile();
         changeView(0);
@@ -307,7 +307,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
     // 更新头像
     private void updateProfile() {
-        Call<ResponseBody> responseBodyCall = commonService.profile(uid);
+        Call<ResponseBody> responseBodyCall = retrofitService.profile(uid);
 
         responseBodyCall.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -371,7 +371,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         File file = new File(picPath);
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         MultipartBody.Part pic = MultipartBody.Part.createFormData("pic", file.getName(), requestFile);
-        Call<ResponseBody> call = commonService.uploadProfile(uid, pic);
+        Call<ResponseBody> call = retrofitService.uploadProfile(uid, pic);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

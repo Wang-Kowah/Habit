@@ -20,7 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kowah.habit.service.CommonService;
+import com.kowah.habit.service.RetrofitService;
 import com.xiasuhuei321.loadingdialog.view.LoadingDialog;
 
 import java.io.IOException;
@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
     TextView termsButton;
     TextView getCode;
     CountDownTimerUtils countDownTimer;
-    CommonService commonService;
+    RetrofitService retrofitService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,10 +62,10 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
 
         countDownTimer = new CountDownTimerUtils(getCode, 60000, 1000);
 
-        commonService = new Retrofit.Builder()
+        retrofitService = new Retrofit.Builder()
                 .baseUrl("http://119.29.77.201/habit/")
                 .build()
-                .create(CommonService.class);
+                .create(RetrofitService.class);
 
         editor = getSharedPreferences("user_data", Context.MODE_PRIVATE).edit();
     }
@@ -129,7 +129,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
             toast.setText("请输入正确的手机号");
             toast.show();
         } else {
-            Call<ResponseBody> call = commonService.getVerifyCode(mobileStr);
+            Call<ResponseBody> call = retrofitService.getVerifyCode(mobileStr);
 
             // 发送网络请求(异步)
             call.enqueue(new Callback<ResponseBody>() {
@@ -177,8 +177,8 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                     .setRepeatCount(0)
                     .show();
 
-            Call<ResponseBody> call = commonService.checkVerifyCode(mobileStr1, codeStr);
-//            Call<ResponseBody> call = commonService.info(11);
+            Call<ResponseBody> call = retrofitService.checkVerifyCode(mobileStr1, codeStr);
+//            Call<ResponseBody> call = retrofitService.info(11);
 
             // 发送网络请求(异步)
             call.enqueue(new Callback<ResponseBody>() {
@@ -192,8 +192,8 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                             loadingDialog.loadFailed();
                         } else {
                             // 暂定格式："用户"+手机号后4位+10位时间戳
-                            call = commonService.signUp(mobileStr1, "用户" + mobileStr1.substring(7) + System.currentTimeMillis() / 1000);
-//                            call = commonService.logIn("13602676334");
+                            call = retrofitService.signUp(mobileStr1, "用户" + mobileStr1.substring(7) + System.currentTimeMillis() / 1000);
+//                            call = retrofitService.logIn("13602676334");
                             call.enqueue(new Callback<ResponseBody>() {
                                 @Override
                                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
