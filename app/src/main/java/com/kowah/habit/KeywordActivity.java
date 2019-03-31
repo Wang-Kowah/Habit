@@ -186,7 +186,9 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
                     json = response.body().string();
                     JSONObject jsonObject = JSONObject.parseObject(json);
                     if (!jsonObject.getInteger("retcode").equals(0)) {
-                        Toast.makeText(KeywordActivity.this, jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
+                        Toast toast = Toast.makeText(KeywordActivity.this, jsonObject.getString("msg"), Toast.LENGTH_SHORT);
+                        toast.setText(jsonObject.getString("msg"));
+                        toast.show();
                     } else {
                         mLastUpdateKeyword = Integer.parseInt(DateUtils.formatDate(System.currentTimeMillis(), "yyyyMMdd"));
 
@@ -215,19 +217,25 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
                             }
                         }
                         if (hasNewMsg == 0) {
-                            Toast.makeText(KeywordActivity.this, "没有更多消息啦", Toast.LENGTH_SHORT).show();
+                            Toast toast = Toast.makeText(KeywordActivity.this, "没有更多消息啦", Toast.LENGTH_SHORT);
+                            toast.setText("没有更多消息啦");
+                            toast.show();
                         }
                     }
                     adapter.setFooterVisibility(View.GONE);
                 } catch (IOException e) {
-                    Toast.makeText(KeywordActivity.this, "网络异常，请稍后重试", Toast.LENGTH_SHORT).show();
+                    Toast toast = Toast.makeText(KeywordActivity.this, "网络异常，请稍后重试", Toast.LENGTH_SHORT);
+                    toast.setText("网络异常，请稍后重试");
+                    toast.show();
                     e.printStackTrace();
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(KeywordActivity.this, "网络异常，请稍后重试", Toast.LENGTH_SHORT).show();
+                Toast toast = Toast.makeText(KeywordActivity.this, "网络异常，请稍后重试", Toast.LENGTH_SHORT);
+                toast.setText("网络异常，请稍后重试");
+                toast.show();
                 t.printStackTrace();
             }
         });

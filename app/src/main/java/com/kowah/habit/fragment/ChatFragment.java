@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.provider.AlarmClock;
 import android.support.annotation.NonNull;
@@ -40,6 +39,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -95,7 +95,9 @@ public class ChatFragment extends Fragment {
                         public void onTimeSet(TimePicker view, int hour, int minute) {
                             String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
                             timeButton.setText(time);
-                            Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT).show();
+                            Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
+                            toast.setText("闹钟设置成功");
+                            toast.show();
 
                             editor.putString("time1", time);
                             editor.apply();
@@ -130,7 +132,9 @@ public class ChatFragment extends Fragment {
                                     String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
                                     timeButton.setText(time);
                                     dateTextView.setText(daySelected);
-                                    Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT).show();
+                                    Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
+                                    toast.setText("闹钟设置成功");
+                                    toast.show();
 
                                     editor.putString("dayInWeek", daySelected);
                                     editor.putString("time2", time);
@@ -191,20 +195,26 @@ public class ChatFragment extends Fragment {
                                     json = response.body().string();
                                     JSONObject jsonObject = JSONObject.parseObject(json);
                                     if (!jsonObject.getInteger("retcode").equals(0)) {
-                                        Toast.makeText(getContext(), jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
+                                        Toast toast = Toast.makeText(getContext(), jsonObject.getString("msg"), Toast.LENGTH_SHORT);
+                                        toast.setText(jsonObject.getString("msg"));
+                                        toast.show();
                                     }
 
                                     updateMsg(false);
                                     mLastUpdateMsg = System.currentTimeMillis() / 1000;
                                 } catch (IOException e) {
-                                    Toast.makeText(getContext(), "网络异常，请稍后重试", Toast.LENGTH_SHORT).show();
+                                    Toast toast = Toast.makeText(getContext(), "网络异常，请稍后重试", Toast.LENGTH_SHORT);
+                                    toast.setText("网络异常，请稍后重试");
+                                    toast.show();
                                     e.printStackTrace();
                                 }
                             }
 
                             @Override
                             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                                Toast.makeText(getContext(), "网络异常，请稍后重试", Toast.LENGTH_SHORT).show();
+                                Toast toast = Toast.makeText(getContext(), "网络异常，请稍后重试", Toast.LENGTH_SHORT);
+                                toast.setText("网络异常，请稍后重试");
+                                toast.show();
                                 t.printStackTrace();
                             }
                         });
@@ -301,7 +311,7 @@ public class ChatFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             holder.msg.setText(msgList.get(position));
 
             // 确定昨天跟今天的时间显示格式
@@ -325,12 +335,13 @@ public class ChatFragment extends Fragment {
                 holder.profile.setImageBitmap(bitmap); //设置Bitmap为头像
             }
 
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    System.out.println(position);
-                }
-            });
+//            holder.itemView.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    System.out.println(position);
+//                }
+//            });
+
         }
 
         @Override
@@ -344,7 +355,7 @@ public class ChatFragment extends Fragment {
             private TextView msgDate;
             private ImageView profile;
 
-            public ViewHolder(View itemView) {
+            ViewHolder(View itemView) {
                 super(itemView);
                 msg = itemView.findViewById(R.id.msg);
                 msgDate = itemView.findViewById(R.id.msgDate);
@@ -374,7 +385,9 @@ public class ChatFragment extends Fragment {
                     json = response.body().string();
                     JSONObject jsonObject = JSONObject.parseObject(json);
                     if (!jsonObject.getInteger("retcode").equals(0)) {
-                        Toast.makeText(getContext(), jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
+                        Toast toast = Toast.makeText(getContext(), jsonObject.getString("msg"), Toast.LENGTH_SHORT);
+                        toast.setText(jsonObject.getString("msg"));
+                        toast.show();
                     } else {
                         int hasNewMsg = 0;
                         mLastUpdateMsg = System.currentTimeMillis() / 1000;
@@ -408,7 +421,9 @@ public class ChatFragment extends Fragment {
                             }
                         }
                         if (hasNewMsg == 0) {
-                            Toast.makeText(getContext(), "没有更多消息啦", Toast.LENGTH_SHORT).show();
+                            Toast toast = Toast.makeText(getContext(), "没有更多消息啦", Toast.LENGTH_SHORT);
+                            toast.setText("没有更多消息啦");
+                            toast.show();
                         }
                     }
                     swipeRefreshLayout.setRefreshing(false);
@@ -419,7 +434,9 @@ public class ChatFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(getContext(), "网络异常，请稍后重试", Toast.LENGTH_SHORT).show();
+                Toast toast = Toast.makeText(getContext(), "网络异常，请稍后重试", Toast.LENGTH_SHORT);
+                toast.setText("网络异常，请稍后重试");
+                toast.show();
                 t.printStackTrace();
             }
         });

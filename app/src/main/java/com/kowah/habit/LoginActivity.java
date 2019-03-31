@@ -125,7 +125,9 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
     private void getCode() {
         final String mobileStr = mobile.getText().toString();
         if (mobileStr.length() != 11) {
-            Toast.makeText(LoginActivity.this, "请输入正确的手机号", Toast.LENGTH_SHORT).show();
+            Toast toast = Toast.makeText(LoginActivity.this, "请输入正确的手机号", Toast.LENGTH_SHORT);
+            toast.setText("请输入正确的手机号");
+            toast.show();
         } else {
             Call<ResponseBody> call = commonService.getVerifyCode(mobileStr);
 
@@ -137,7 +139,9 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                         String json = response.body().string();
                         JSONObject jsonObject = JSONObject.parseObject(json);
                         if (!jsonObject.get("retcode").equals(0)) {
-                            Toast.makeText(LoginActivity.this, jsonObject.get("msg").toString(), Toast.LENGTH_SHORT).show();
+                            Toast toast = Toast.makeText(LoginActivity.this, jsonObject.getString("msg"), Toast.LENGTH_SHORT);
+                            toast.setText(jsonObject.getString("msg"));
+                            toast.show();
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -160,7 +164,9 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
         final String mobileStr1 = mobile.getText().toString();
         String codeStr = code.getText().toString();
         if (codeStr.length() != 4) {
-            Toast.makeText(LoginActivity.this, "请输入完整的验证码", Toast.LENGTH_SHORT).show();
+            Toast toast = Toast.makeText(LoginActivity.this, "请输入完整的验证码", Toast.LENGTH_SHORT);
+            toast.setText("请输入完整的验证码");
+            toast.show();
         } else {
 
             final LoadingDialog loadingDialog = new LoadingDialog(this);
@@ -181,7 +187,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                     try {
                         String json = response.body().string();
                         JSONObject jsonObject = JSONObject.parseObject(json);
-                        if (!jsonObject.getInteger("retcode").equals(0)) {
+                        if (!jsonObject.getInteger("retcode").equals(0) && !jsonObject.getInteger("retcode").equals(4001)) {
                             loadingDialog.setFailedText(jsonObject.getString("msg"));
                             loadingDialog.loadFailed();
                         } else {
@@ -229,7 +235,9 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
                     Log.e("e", "onFailure: ", t);
-                    Toast.makeText(LoginActivity.this, "网络异常，请稍后重试", Toast.LENGTH_SHORT).show();
+                    Toast toast = Toast.makeText(LoginActivity.this, "网络异常，请稍后重试", Toast.LENGTH_SHORT);
+                    toast.setText("网络异常，请稍后重试");
+                    toast.show();
                 }
             });
         }
@@ -238,6 +246,6 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
     private void navigateTo(Class activity) {
         Intent intent = new Intent(LoginActivity.this, activity);
         startActivity(intent);
-//        finish();
     }
+
 }

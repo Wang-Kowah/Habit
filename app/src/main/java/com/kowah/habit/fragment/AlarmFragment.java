@@ -3,8 +3,6 @@ package com.kowah.habit.fragment;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.icu.util.Calendar;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.AlarmClock;
 import android.support.annotation.NonNull;
@@ -20,6 +18,7 @@ import android.widget.Toast;
 import com.kowah.habit.R;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Locale;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -45,7 +44,9 @@ public class AlarmFragment extends Fragment {
                     public void onTimeSet(TimePicker view, int hour, int minute) {
                         String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
                         alertTime.setText(time);
-                        Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT).show();
+                        Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
+                        toast.setText("闹钟设置成功");
+                        toast.show();
 
                         editor.putString("alertTime", time);
                         editor.apply();
