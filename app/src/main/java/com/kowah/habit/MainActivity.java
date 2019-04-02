@@ -12,13 +12,13 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
 import android.view.Gravity;
@@ -33,6 +33,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kowah.habit.fragment.AlarmFragment;
@@ -63,6 +64,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
     private static final int REQUEST_GALLERY_IMAGE = 10;// 图库选取图片标识请求码
     private static final int REQUEST_CAMERA_IMAGE = 11;// 拍照标识请求码
+    private static final int REQUEST_CROP_IMAGE = 12;// 图片裁剪标识请求码
 
     // 三个导航按钮
     Button buttonOne;
@@ -83,6 +85,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
     // 页面容器
     ViewPager mViewPager;
+    FragmentManager mFragmentManager;
 
     // 底部弹窗
     PopupWindow popupWindow;
@@ -163,7 +166,26 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         fragmentList.add(thirdFragment);
 
         mViewPager = findViewById(R.id.viewpager);
-        mViewPager.setAdapter(new MyFragmentStatePagerAdapter(getSupportFragmentManager()));
+        mFragmentManager = getSupportFragmentManager();
+        mViewPager.setAdapter(new MyFragmentStatePagerAdapter(mFragmentManager));
+        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int i, float v, int i1) {
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int i) {
+            }
+
+            @Override
+            public void onPageSelected(int i) {
+                // 更新按钮颜色
+                buttonOne.setTextColor(getColor(R.color.colorText));
+                buttonTwo.setTextColor(getColor(R.color.colorText));
+                buttonThree.setTextColor(getColor(R.color.colorText));
+                buttonList.get(i).setTextColor(getColor(R.color.colorPrimary));
+            }
+        });
 
         retrofitService = new Retrofit.Builder()
                 .baseUrl("http://119.29.77.201/habit/")
@@ -213,6 +235,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         }
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -225,17 +248,19 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 cursor.moveToFirst();
 
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                final String picPath = cursor.getString(columnIndex);
-                uploadProfile(picPath);
+                mCurrentPhotoPath = cursor.getString(columnIndex);
+                cropPhoto();
                 cursor.close();
             } else if (requestCode == REQUEST_CAMERA_IMAGE) {
-                // 上传前进行压缩
-                try {
-                    compressBitmap(BitmapFactory.decodeStream(new FileInputStream(new File(mCurrentPhotoPath))));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
+                cropPhoto();
+            } else if (requestCode == REQUEST_CROP_IMAGE && null != data) {
+                mCurrentPhotoPath = saveBitmap((Bitmap) data.getExtras().get("data"));
                 uploadProfile(mCurrentPhotoPath);
+
+                // 更新聊天窗口的头像
+                FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
+                fragmentTransaction.detach(chatFragment);
+                fragmentTransaction.attach(chatFragment).commit();
             }
         }
     }
@@ -267,17 +292,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         @Override
         public int getCount() {
             return fragmentList.size();
-        }
-
-        @Override
-        public void startUpdate(@NonNull ViewGroup container) {
-            super.startUpdate(container);
-
-            // 更新按钮颜色
-            buttonOne.setTextColor(getColor(R.color.colorText));
-            buttonTwo.setTextColor(getColor(R.color.colorText));
-            buttonThree.setTextColor(getColor(R.color.colorText));
-            buttonList.get(mViewPager.getCurrentItem()).setTextColor(getColor(R.color.colorPrimary));
         }
 
         // 每次更新完成ViewPager的内容后，调用该接口，此处复写主要是为了让导航按钮上层的覆盖层能够动态的移动
@@ -394,6 +408,9 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 loadingDialog.loadFailed();
+                Toast toast = Toast.makeText(mContext, "网络异常，请稍后重试", Toast.LENGTH_SHORT);
+                toast.setText("网络异常，请稍后重试");
+                toast.show();
             }
         });
     }
@@ -453,19 +470,37 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         startActivityForResult(takePictureIntent, MainActivity.REQUEST_CAMERA_IMAGE);//跳转界面传回拍照所得数据
     }
 
-    //将bitmap压缩转化为jpg格式
-    public void compressBitmap(Bitmap mBitmap) {
-        try {
-            File photo = FileUtils.createImageFile();
-            mCurrentPhotoPath = photo.getAbsolutePath();
+    // 图片裁剪
+    private void cropPhoto() {
+        // 调用系统中自带的图片剪裁
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        intent.setDataAndType(FileProvider.getUriForFile(mContext, "com.kowah.fileprovider", new File(mCurrentPhotoPath)), "image/*");
+        // 下面这个crop=true是设置在开启的Intent中设置显示的VIEW可裁剪
+        intent.putExtra("crop", "true");
+        // aspectX aspectY 是宽高的比例
+        intent.putExtra("aspectX", 1);
+        intent.putExtra("aspectY", 1);
+        // outputX outputY 是裁剪图片宽高
+        intent.putExtra("outputX", 150);
+        intent.putExtra("outputY", 150);
+        intent.putExtra("return-data", true);
+        startActivityForResult(intent, REQUEST_CROP_IMAGE);
+    }
 
-            FileOutputStream out = new FileOutputStream(photo);
-            mBitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
-            out.flush();
-            out.close();
+    // bitmap存储为jpg
+    public static String saveBitmap(Bitmap bitmap) {
+        File file = FileUtils.createImageFile();
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            // 设置PNG的话，透明区域不会变成黑色
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, fileOutputStream);
+
+            fileOutputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return file.getAbsolutePath();
     }
 
     //判定当前是否需要隐藏

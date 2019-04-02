@@ -107,7 +107,7 @@ public class ChatFragment extends Fragment {
                             editor.putString("time1", time);
                             editor.apply();
 
-                            createAlarm("早上复习", hour, minute, -1);
+                            createAlarm("每天总结", hour, minute, -1);
                         }
                     }, 0, 0, true).show();
                 }

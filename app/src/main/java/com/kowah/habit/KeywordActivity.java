@@ -54,6 +54,7 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
     int currentTab = -1;
     // 上次更新关键词列表的日期
     int mLastUpdateKeyword = 20190401;
+    int pageSize = 5;
     int pageNum;
     int uid;
 
@@ -175,10 +176,10 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
         Call<ResponseBody> call;
         switch (currentTab) {
             case 0:
-                call = retrofitService.dayKeyword(uid, pageNum++, 10);
+                call = retrofitService.dayKeyword(uid, pageNum++, pageSize);
                 break;
             default:
-                call = retrofitService.keyword(uid, currentTab, pageNum++, 5);
+                call = retrofitService.keyword(uid, currentTab, pageNum++, pageSize);
                 break;
         }
         call.enqueue(new Callback<ResponseBody>() {

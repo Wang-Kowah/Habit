@@ -51,7 +51,7 @@ public class AlarmFragment extends Fragment {
                         editor.putString("alertTime", time);
                         editor.apply();
 
-                        createAlarm("每天总结", hour, minute);
+                        createAlarm("早上复习", hour, minute);
                     }
                 }, 0, 0, true).show();
             }

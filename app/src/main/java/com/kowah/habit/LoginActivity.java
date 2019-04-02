@@ -187,7 +187,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                     try {
                         String json = response.body().string();
                         JSONObject jsonObject = JSONObject.parseObject(json);
-                        if (!jsonObject.getInteger("retcode").equals(0) && !jsonObject.getInteger("retcode").equals(4001)) {
+                        if (!jsonObject.getInteger("retcode").equals(0)) {
                             loadingDialog.setFailedText(jsonObject.getString("msg"));
                             loadingDialog.loadFailed();
                         } else {
@@ -204,7 +204,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                                         e.printStackTrace();
                                     }
                                     JSONObject jsonObject = JSONObject.parseObject(json);
-                                    if (jsonObject.getInteger("retcode").equals(0)) {
+                                    if (jsonObject.getInteger("retcode").equals(0) || jsonObject.getInteger("retcode").equals(4001)) {
                                         loadingDialog.loadSuccess();
 
                                         int uid = jsonObject.getInteger("uid");
