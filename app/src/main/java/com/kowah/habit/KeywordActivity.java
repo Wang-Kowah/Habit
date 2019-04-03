@@ -52,8 +52,6 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
     ArrayList<String> keywords;
     // 当前页面
     int currentTab = -1;
-    // 上次更新关键词列表的日期
-    int mLastUpdateKeyword = 20190401;
     int pageSize = 5;
     int pageNum;
     int uid;
@@ -67,7 +65,6 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
 
         sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         uid = sharedPreferences.getInt("uid", -1);
-        mLastUpdateKeyword = Integer.parseInt(DateUtils.formatDate(System.currentTimeMillis(), "yyyyMMdd"));
 
         buttonOne = findViewById(R.id.btn_one2);
         buttonTwo = findViewById(R.id.btn_two2);
@@ -194,9 +191,6 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
                         toast.setText(jsonObject.getString("msg"));
                         toast.show();
                     } else {
-                        mLastUpdateKeyword = Integer.parseInt(DateUtils.formatDate(System.currentTimeMillis(), "yyyyMMdd"));
-
-
                         JSONObject result;
                         switch (currentTab) {
                             case 0:
@@ -285,11 +279,13 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
                 ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
 
                 int date = dateList.get(position);
-                if (currentTab == 0 && mLastUpdateKeyword - date == 1) {
+                long now = System.currentTimeMillis();
+                // 统计日期固定为周日与每月最后一天
+                if (currentTab == 0 && date == Integer.parseInt(DateUtils.formatDate(DateUtils.getDayBeginTimestamp(now, 1), "yyyyMMdd"))) {
                     itemViewHolder.keywordDate.setText("昨天");
-                } else if (currentTab == 1 && mLastUpdateKeyword - date < 7) {
+                } else if (currentTab == 1 &&  date == Integer.parseInt(DateUtils.formatDate(DateUtils.getLastSundayTimestamp(now), "yyyyMMdd"))) {
                     itemViewHolder.keywordDate.setText("上周");
-                } else if (currentTab == 2 && date > Integer.parseInt(DateUtils.formatDate(DateUtils.getMonthBeginTimestamp(System.currentTimeMillis(), 0), "yyyyMMdd"))) {
+                } else if (currentTab == 2 && date == Integer.parseInt(DateUtils.formatDate(DateUtils.getMonthEndTimestamp(now, -1), "yyyyMMdd"))) {
                     itemViewHolder.keywordDate.setText("上月");
                 } else {
                     itemViewHolder.keywordDate.setText(date / 10000 + "年" + date % 10000 / 100 + "月" + date % 100 + "日");

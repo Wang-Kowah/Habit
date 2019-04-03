@@ -111,6 +111,28 @@ public class DateUtils {
         return c.getTimeInMillis();
     }
 
+    /**
+     * 获得上周日的开始时间戳
+     *
+     * @param timestamp 时间戳
+     * @return
+     */
+    public static long getLastSundayTimestamp(long timestamp) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date(timestamp));
+
+        int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+        if (dayOfWeek == Calendar.SUNDAY) {
+            dayOfWeek += Calendar.DAY_OF_WEEK;
+        }
+        c.add(Calendar.DATE, Calendar.SUNDAY - dayOfWeek);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return c.getTimeInMillis();
+    }
+
     public static boolean isMonday(long timestamp) {
         Calendar c = Calendar.getInstance();
         c.setTime(new Date(timestamp));

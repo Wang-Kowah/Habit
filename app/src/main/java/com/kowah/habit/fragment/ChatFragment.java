@@ -124,7 +124,6 @@ public class ChatFragment extends Fragment {
             });
 
             currentTab = 0;
-//            createAlarm("每天总结", 22, 30, -1);
             System.out.println("day fragment created");
         } else {
             final TextView dateTextView = view.findViewById(R.id.dateText);
@@ -175,7 +174,6 @@ public class ChatFragment extends Fragment {
             });
 
             currentTab = 2;
-//            createAlarm("每周总结", 18, 50, 5);
             System.out.println("week fragment created");
         }
 
@@ -301,9 +299,10 @@ public class ChatFragment extends Fragment {
 
             // 确定昨天跟今天的时间显示格式
             long date = dateList.get(position) * 1000L;
-            if (date > DateUtils.getDayBeginTimestamp(System.currentTimeMillis(), 1) && date < DateUtils.getDayBeginTimestamp(System.currentTimeMillis(), 0)) {
+            long now = System.currentTimeMillis();
+            if (date > DateUtils.getDayBeginTimestamp(now, 1) && date < DateUtils.getDayBeginTimestamp(now, 0)) {
                 holder.msgDate.setText("昨天 " + DateUtils.formatDate(date, "HH:mm"));
-            } else if (date > DateUtils.getDayBeginTimestamp(System.currentTimeMillis(), 0)) {
+            } else if (date > DateUtils.getDayBeginTimestamp(now, 0)) {
                 holder.msgDate.setText(DateUtils.formatDate(date, "HH:mm"));
             } else {
                 holder.msgDate.setText(DateUtils.formatDate(date));
@@ -472,4 +471,5 @@ public class ChatFragment extends Fragment {
             startActivity(intent);
         }
     }
+
 }

@@ -29,8 +29,8 @@ public class StartActivity extends AppCompatActivity {
         long mLastOpenApp = sharedPreferences.getLong("mLastOpenApp", -1);
         long now = System.currentTimeMillis();
 
-        // 只在每周一出现一次
-        if (DateUtils.isMonday(now) && mLastOpenApp < DateUtils.getDayBeginTimestamp(now, 0)) {
+        // 首次安装时打开，否则只在每周一出现一次
+        if (mLastOpenApp == -1 || (DateUtils.isMonday(now) && mLastOpenApp < DateUtils.getDayBeginTimestamp(now, 0))) {
 
             TextView skipButton = findViewById(R.id.skip_button);
             skipButton.setOnClickListener(new View.OnClickListener() {

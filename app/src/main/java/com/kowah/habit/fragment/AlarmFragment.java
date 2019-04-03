@@ -76,7 +76,6 @@ public class AlarmFragment extends Fragment {
             }
         });
 
-//        createAlarm("早上复习", 7,50);
         return view;
     }
 
@@ -127,4 +126,5 @@ public class AlarmFragment extends Fragment {
 //        alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(c.getTimeInMillis(),pendingIntent) ,pendingIntent);
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
     }
+
 }

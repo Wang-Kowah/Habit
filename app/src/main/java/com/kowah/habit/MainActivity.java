@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.provider.AlarmClock;
 import android.provider.MediaStore;
 import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
@@ -22,6 +23,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -49,6 +51,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import okhttp3.MediaType;
@@ -122,6 +125,24 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         if (uid == -1) {
             navigateTo(LoginActivity.class);
             finish();
+        }
+
+        // 首次打开设置三个默认闹钟
+        if (sharedPreferences.getString("alertTime", "").equals("")) {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("alertTime", "7:50");
+            editor.apply();
+
+            createAlarm("每天总结", 22, 30, -1);
+            createAlarm("早上复习", 7, 50, -1);
+            createAlarm("每周总结", 18, 50, 5);
+
+            new AlertDialog.Builder(mContext)
+                    .setTitle("已为您设置默认闹钟")
+                    .setMessage("此闹钟用途为提醒您定时进行总结，可点击左下角自行更改提醒时间")
+                    .setPositiveButton("好的", null)
+                    .setCancelable(false)
+                    .show();
         }
 
         buttonOne = findViewById(R.id.btn_one);
@@ -560,6 +581,52 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             cursor.close();
         }
         return result;
+    }
+
+    // 创建闹钟
+    private void createAlarm(String message, int hour, int minutes, int selected) {
+        ArrayList<Integer> weekDays = new ArrayList<>();
+        weekDays.add(Calendar.MONDAY);
+        weekDays.add(Calendar.TUESDAY);
+        weekDays.add(Calendar.WEDNESDAY);
+        weekDays.add(Calendar.THURSDAY);
+        weekDays.add(Calendar.FRIDAY);
+        weekDays.add(Calendar.SATURDAY);
+        weekDays.add(Calendar.SUNDAY);
+
+//        String packageName = getActivity().getApplication().getPackageName();
+//        Uri ringtoneUri = Uri.parse("android.resource://" + packageName + "/" + resId);
+
+        //action为AlarmClock.ACTION_SET_ALARM
+        Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM)
+                //闹钟的小时
+                .putExtra(AlarmClock.EXTRA_HOUR, hour)
+                //闹钟的分钟
+                .putExtra(AlarmClock.EXTRA_MINUTES, minutes)
+                //响铃时提示的信息
+                .putExtra(AlarmClock.EXTRA_MESSAGE, message)
+                //用于指定该闹铃触发时是否振动
+                .putExtra(AlarmClock.EXTRA_VIBRATE, false)
+                //一个 content: URI，用于指定闹铃使用的铃声，也可指定 VALUE_RINGTONE_SILENT 以不使用铃声。
+                //如需使用默认铃声，则无需指定此 extra。
+//                .putExtra(AlarmClock.EXTRA_RINGTONE, ringtoneUri)
+                //一个 ArrayList，其中包括应重复触发该闹铃的每个周日。
+                // 每一天都必须使用 Calendar 类中的某个整型值（如 MONDAY）进行声明。
+                //对于一次性闹铃，无需指定此 extra
+                .putExtra(AlarmClock.EXTRA_DAYS, weekDays)
+                //如果为true，则调用startActivity()不会进入手机的闹钟设置界面
+                .putExtra(AlarmClock.EXTRA_SKIP_UI, true);
+
+        // 选定某一天
+        if (selected != -1) {
+            ArrayList<Integer> oneDay = new ArrayList<>();
+            oneDay.add(weekDays.get(selected));
+            intent.putExtra(AlarmClock.EXTRA_DAYS, oneDay);
+        }
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 
 }
