@@ -7,23 +7,73 @@
     android:gravity="center_horizontal"
     android:orientation="vertical">
 
+    <!--<TextView-->
+        <!--android:id="@+id/msgDate"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="28px"-->
+        <!--android:gravity="center"-->
+        <!--android:text="2019年3月27日 3:21"-->
+        <!--android:textColor="@color/colorTime"-->
+        <!--android:textSize="14sp" />-->
+
+    <!--<LinearLayout-->
+        <!--android:layout_width="870px"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="right"-->
+        <!--android:layout_marginTop="10px"-->
+        <!--android:layout_marginRight="43px"-->
+        <!--android:layout_marginBottom="20px"-->
+        <!--android:gravity="right"-->
+        <!--android:orientation="horizontal">-->
+
+        <!--<LinearLayout-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:background="@drawable/chat_bubble"-->
+            <!--android:gravity="center">-->
+
+            <!--<TextView-->
+                <!--android:id="@+id/msg"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:gravity="start|top"-->
+                <!--android:maxWidth="700px"-->
+                <!--android:padding="10px"-->
+                <!--android:text="周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日"-->
+                <!--android:textColor="@color/colorText"-->
+                <!--android:textIsSelectable="true"-->
+                <!--android:textSize="18sp" />-->
+        <!--</LinearLayout>-->
+
+        <!--<de.hdodenhof.circleimageview.CircleImageView-->
+            <!--android:id="@+id/chatProfile"-->
+            <!--android:layout_width="120px"-->
+            <!--android:layout_height="120px"-->
+            <!--android:layout_marginLeft="20px"-->
+            <!--android:src="@mipmap/peiqixxxhdpi"-->
+            <!--app:civ_border_color="#fff"-->
+            <!--app:civ_border_width="2px" />-->
+    <!--</LinearLayout>-->
+
+
     <TextView
         android:id="@+id/msgDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="28px"
+        android:layout_marginTop="9dp"
         android:gravity="center"
         android:text="2019年3月27日 3:21"
         android:textColor="@color/colorTime"
         android:textSize="14sp" />
 
     <LinearLayout
-        android:layout_width="870px"
+        android:layout_width="290dp"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:layout_marginTop="10px"
-        android:layout_marginRight="43px"
-        android:layout_marginBottom="20px"
+        android:layout_marginTop="3dp"
+        android:layout_marginRight="14dp"
+        android:layout_marginBottom="7dp"
         android:gravity="right"
         android:orientation="horizontal">
 
@@ -38,8 +88,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="start|top"
-                android:maxWidth="700px"
-                android:padding="10px"
+                android:maxWidth="233dp"
+                android:padding="3dp"
                 android:text="周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日"
                 android:textColor="@color/colorText"
                 android:textIsSelectable="true"
@@ -48,11 +98,11 @@
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/chatProfile"
-            android:layout_width="120px"
-            android:layout_height="120px"
-            android:layout_marginLeft="20px"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="7dp"
             android:src="@mipmap/peiqixxxhdpi"
             app:civ_border_color="#fff"
-            app:civ_border_width="2px" />
+            app:civ_border_width="1dp" />
     </LinearLayout>
 </LinearLayout>

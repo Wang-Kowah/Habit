@@ -1,9 +1,13 @@
 package com.kowah.habit.fragment;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.AlarmClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,6 +20,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.kowah.habit.R;
+import com.kowah.habit.RingReceiver;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,10 +30,15 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class AlarmFragment extends Fragment {
 
+    private AlarmManager alarmManager;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_data", MODE_PRIVATE);
+
+        alarmManager = (AlarmManager) getActivity().getApplicationContext().getSystemService(Service.ALARM_SERVICE);
+
+        final SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_data", MODE_PRIVATE);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
 
         View view = inflater.inflate(R.layout.fragment_alarm, container, false);
@@ -46,16 +56,27 @@ public class AlarmFragment extends Fragment {
                         alertTime.setText(time);
                         Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
                         toast.setText("闹钟设置成功");
+                        if (!time.equals(sharedPreferences.getString("alertTime", "07:50"))){
+                            toast.setText("闹钟设置成功，请手动删除旧闹钟");
+                        }
                         toast.show();
 
                         editor.putString("alertTime", time);
                         editor.apply();
 
                         createAlarm("早上复习", hour, minute);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                showAlarm();
+                            }
+                        }, 300);
                     }
                 }, 0, 0, true).show();
             }
         });
+
+//        createAlarm("早上复习", 7,50);
         return view;
     }
 
@@ -70,24 +91,13 @@ public class AlarmFragment extends Fragment {
         testDays.add(Calendar.SATURDAY);
         testDays.add(Calendar.SUNDAY);
 
-//        String packageName = getActivity().getApplication().getPackageName();
-//        Uri ringtoneUri = Uri.parse("android.resource://" + packageName + "/" + resId);
-
         //action为AlarmClock.ACTION_SET_ALARM
         Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM)
-                //闹钟的小时
                 .putExtra(AlarmClock.EXTRA_HOUR, hour)
-                //闹钟的分钟
                 .putExtra(AlarmClock.EXTRA_MINUTES, minutes)
-                //响铃时提示的信息
                 .putExtra(AlarmClock.EXTRA_MESSAGE, message)
                 //用于指定该闹铃触发时是否振动
                 .putExtra(AlarmClock.EXTRA_VIBRATE, false)
-                //一个 content: URI，用于指定闹铃使用的铃声，也可指定 VALUE_RINGTONE_SILENT 以不使用铃声。
-                //如需使用默认铃声，则无需指定此 extra。
-//                .putExtra(AlarmClock.EXTRA_RINGTONE, ringtoneUri)
-                //一个 ArrayList，其中包括应重复触发该闹铃的每个周日。
-                // 每一天都必须使用 Calendar 类中的某个整型值（如 MONDAY）进行声明。
                 //对于一次性闹铃，无需指定此 extra
                 .putExtra(AlarmClock.EXTRA_DAYS, testDays)
                 //如果为true，则调用startActivity()不会进入手机的闹钟设置界面
@@ -95,5 +105,26 @@ public class AlarmFragment extends Fragment {
         if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
             startActivity(intent);
         }
+    }
+
+    private void showAlarm() {
+        Intent intent = new Intent(AlarmClock.ACTION_SHOW_ALARMS);
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(intent);
+        }
+    }
+
+    private void setAlarm(String message, int hour, int minutes) {
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.HOUR_OF_DAY, hour);
+        c.set(Calendar.MINUTE, minutes);
+
+        Intent intent = new Intent(this.getActivity(), RingReceiver.class);
+        intent.setAction("com.kowah.habit.Ring");
+        intent.putExtra("tab", 1);
+        intent.putExtra("msg", message);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this.getActivity(), 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(c.getTimeInMillis(),pendingIntent) ,pendingIntent);
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
     }
 }

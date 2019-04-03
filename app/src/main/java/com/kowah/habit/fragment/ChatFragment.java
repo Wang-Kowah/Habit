@@ -102,18 +102,29 @@ public class ChatFragment extends Fragment {
                             timeButton.setText(time);
                             Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
                             toast.setText("闹钟设置成功");
+                            if (!time.equals(sharedPreferences.getString("time1", "22:30"))) {
+                                toast.setText("闹钟设置成功，请手动删除旧闹钟");
+                            }
+                            toast.show();
                             toast.show();
 
                             editor.putString("time1", time);
                             editor.apply();
 
                             createAlarm("每天总结", hour, minute, -1);
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showAlarm();
+                                }
+                            }, 300);
                         }
                     }, 0, 0, true).show();
                 }
             });
 
             currentTab = 0;
+//            createAlarm("每天总结", 22, 30, -1);
             System.out.println("day fragment created");
         } else {
             final TextView dateTextView = view.findViewById(R.id.dateText);
@@ -139,6 +150,10 @@ public class ChatFragment extends Fragment {
                                     dateTextView.setText(daySelected);
                                     Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
                                     toast.setText("闹钟设置成功");
+                                    if (!time.equals(sharedPreferences.getString("time2", "18:50")) || !daySelected.equals(sharedPreferences.getString("dayInWeek", "六"))) {
+                                        toast.setText("闹钟设置成功，请手动删除旧闹钟");
+                                    }
+                                    toast.show();
                                     toast.show();
 
                                     editor.putString("dayInWeek", daySelected);
@@ -146,6 +161,12 @@ public class ChatFragment extends Fragment {
                                     editor.apply();
 
                                     createAlarm("每周总结", hour, minute, selected);
+                                    new Handler().postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showAlarm();
+                                        }
+                                    }, 300);
                                 }
                             }, 0, 0, true).show();
                         }
@@ -154,6 +175,7 @@ public class ChatFragment extends Fragment {
             });
 
             currentTab = 2;
+//            createAlarm("每周总结", 18, 50, 5);
             System.out.println("week fragment created");
         }
 
@@ -243,59 +265,16 @@ public class ChatFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                updateMsg();
+                // 可见状态下才进行刷新，防止误触
+                if (getUserVisibleHint()) {
+                    updateMsg();
+                }
             }
         });
 
         updateMsg();
 
         return view;
-    }
-
-    // 创建闹钟
-    private void createAlarm(String message, int hour, int minutes, int selected) {
-        ArrayList<Integer> weekDays = new ArrayList<>();
-        weekDays.add(Calendar.MONDAY);
-        weekDays.add(Calendar.TUESDAY);
-        weekDays.add(Calendar.WEDNESDAY);
-        weekDays.add(Calendar.THURSDAY);
-        weekDays.add(Calendar.FRIDAY);
-        weekDays.add(Calendar.SATURDAY);
-        weekDays.add(Calendar.SUNDAY);
-
-//        String packageName = getActivity().getApplication().getPackageName();
-//        Uri ringtoneUri = Uri.parse("android.resource://" + packageName + "/" + resId);
-
-        //action为AlarmClock.ACTION_SET_ALARM
-        Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM)
-                //闹钟的小时
-                .putExtra(AlarmClock.EXTRA_HOUR, hour)
-                //闹钟的分钟
-                .putExtra(AlarmClock.EXTRA_MINUTES, minutes)
-                //响铃时提示的信息
-                .putExtra(AlarmClock.EXTRA_MESSAGE, message)
-                //用于指定该闹铃触发时是否振动
-                .putExtra(AlarmClock.EXTRA_VIBRATE, false)
-                //一个 content: URI，用于指定闹铃使用的铃声，也可指定 VALUE_RINGTONE_SILENT 以不使用铃声。
-                //如需使用默认铃声，则无需指定此 extra。
-//                .putExtra(AlarmClock.EXTRA_RINGTONE, ringtoneUri)
-                //一个 ArrayList，其中包括应重复触发该闹铃的每个周日。
-                // 每一天都必须使用 Calendar 类中的某个整型值（如 MONDAY）进行声明。
-                //对于一次性闹铃，无需指定此 extra
-                .putExtra(AlarmClock.EXTRA_DAYS, weekDays)
-                //如果为true，则调用startActivity()不会进入手机的闹钟设置界面
-                .putExtra(AlarmClock.EXTRA_SKIP_UI, true);
-
-        // 选定某一天
-        if (selected != -1) {
-            ArrayList<Integer> oneDay = new ArrayList<>();
-            oneDay.add(weekDays.get(selected));
-            intent.putExtra(AlarmClock.EXTRA_DAYS, oneDay);
-        }
-
-        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
-            startActivity(intent);
-        }
     }
 
     // 自定义RecyclerViewAdapter
@@ -398,14 +377,16 @@ public class ChatFragment extends Fragment {
                         if (jsonObject.getJSONObject("noteList").getIntValue("total") == msgList.size()) {
                             Toast toast = Toast.makeText(getContext(), "没有更多消息啦", Toast.LENGTH_SHORT);
                             toast.setText("没有更多消息啦");
-                            toast.show();
+                            if (getUserVisibleHint()) {
+                                toast.show();
+                            }
                         } else {
                             JSONArray jsonArray = jsonObject.getJSONObject("noteList").getJSONArray("list");
                             for (int i = 0; i < jsonArray.size(); i++) {
                                 JSONObject object = jsonArray.getJSONObject(i);
 
                                 // 排除发送新消息后拉取到的重复数据
-                                if (! dateList.contains(object.getLongValue("createTime"))) {
+                                if (!dateList.contains(object.getLongValue("createTime"))) {
                                     msgList.add(object.getString("content"));
                                     dateList.add(object.getLongValue("createTime"));
 
@@ -437,4 +418,58 @@ public class ChatFragment extends Fragment {
         });
     }
 
+    // 创建闹钟
+    private void createAlarm(String message, int hour, int minutes, int selected) {
+        ArrayList<Integer> weekDays = new ArrayList<>();
+        weekDays.add(Calendar.MONDAY);
+        weekDays.add(Calendar.TUESDAY);
+        weekDays.add(Calendar.WEDNESDAY);
+        weekDays.add(Calendar.THURSDAY);
+        weekDays.add(Calendar.FRIDAY);
+        weekDays.add(Calendar.SATURDAY);
+        weekDays.add(Calendar.SUNDAY);
+
+//        String packageName = getActivity().getApplication().getPackageName();
+//        Uri ringtoneUri = Uri.parse("android.resource://" + packageName + "/" + resId);
+
+        //action为AlarmClock.ACTION_SET_ALARM
+        Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM)
+                //闹钟的小时
+                .putExtra(AlarmClock.EXTRA_HOUR, hour)
+                //闹钟的分钟
+                .putExtra(AlarmClock.EXTRA_MINUTES, minutes)
+                //响铃时提示的信息
+                .putExtra(AlarmClock.EXTRA_MESSAGE, message)
+                //用于指定该闹铃触发时是否振动
+                .putExtra(AlarmClock.EXTRA_VIBRATE, false)
+                //一个 content: URI，用于指定闹铃使用的铃声，也可指定 VALUE_RINGTONE_SILENT 以不使用铃声。
+                //如需使用默认铃声，则无需指定此 extra。
+//                .putExtra(AlarmClock.EXTRA_RINGTONE, ringtoneUri)
+                //一个 ArrayList，其中包括应重复触发该闹铃的每个周日。
+                // 每一天都必须使用 Calendar 类中的某个整型值（如 MONDAY）进行声明。
+                //对于一次性闹铃，无需指定此 extra
+                .putExtra(AlarmClock.EXTRA_DAYS, weekDays)
+                //如果为true，则调用startActivity()不会进入手机的闹钟设置界面
+                .putExtra(AlarmClock.EXTRA_SKIP_UI, true);
+
+        // 选定某一天
+        if (selected != -1) {
+            ArrayList<Integer> oneDay = new ArrayList<>();
+            oneDay.add(weekDays.get(selected));
+            intent.putExtra(AlarmClock.EXTRA_DAYS, oneDay);
+        }
+
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(intent);
+        }
+    }
+
+    // 显示闹钟
+    private void showAlarm() {
+        Intent intent = new Intent(AlarmClock.ACTION_SHOW_ALARMS)
+                .putExtra(AlarmClock.EXTRA_SKIP_UI, false);
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(intent);
+        }
+    }
 }

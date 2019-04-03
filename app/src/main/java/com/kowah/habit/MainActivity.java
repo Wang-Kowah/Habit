@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.CallSuper;
@@ -99,6 +100,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     int uid;
     String mCurrentPhotoPath;
     String mLastProfilePath;
+    Uri uriTempFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,8 +167,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         fragmentList.add(alarmFragment);
         fragmentList.add(thirdFragment);
 
-        mViewPager = findViewById(R.id.viewpager);
         mFragmentManager = getSupportFragmentManager();
+        mViewPager = findViewById(R.id.viewpager);
         mViewPager.setAdapter(new MyFragmentStatePagerAdapter(mFragmentManager));
         mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -235,7 +237,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         }
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -253,8 +254,19 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 cursor.close();
             } else if (requestCode == REQUEST_CAMERA_IMAGE) {
                 cropPhoto();
-            } else if (requestCode == REQUEST_CROP_IMAGE && null != data) {
-                mCurrentPhotoPath = saveBitmap((Bitmap) data.getExtras().get("data"));
+            } else if (requestCode == REQUEST_CROP_IMAGE) {
+                // MIUI无法通过return-data返回bitmap，需要特殊处理
+//                if ( null != data) {
+//                mCurrentPhotoPath = saveBitmap((Bitmap) data.getExtras().get("data"));
+//                }
+
+                // 已经输出成文件，无需再次保存
+//                try {
+//                    mCurrentPhotoPath = saveBitmap(BitmapFactory.decodeStream(getContentResolver().openInputStream(uriTempFile)));
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+                mCurrentPhotoPath = uri2path(uriTempFile);
                 uploadProfile(mCurrentPhotoPath);
 
                 // 更新聊天窗口的头像
@@ -308,9 +320,9 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         }
     }
 
-    //手动设置ViewPager要显示的视图
-    private void changeView(int desTab) {
-        mViewPager.setCurrentItem(desTab, true);
+    // 手动设置ViewPager要显示的视图
+    private void changeView(int tab) {
+        mViewPager.setCurrentItem(tab, true);
     }
 
     // 页面跳转
@@ -481,10 +493,17 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         // aspectX aspectY 是宽高的比例
         intent.putExtra("aspectX", 1);
         intent.putExtra("aspectY", 1);
-        // outputX outputY 是裁剪图片宽高
+        // outputX outputY 是裁剪图片宽高，return-data限制最大160
         intent.putExtra("outputX", 150);
         intent.putExtra("outputY", 150);
-        intent.putExtra("return-data", true);
+        // MIUI无法通过return-data返回bitmap，需要特殊处理
+//        intent.putExtra("return-data", true);
+
+        // 裁剪后的图片Uri路径，uriTempFile为Uri类变量
+        uriTempFile = Uri.parse("file://" + "/" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath() + "/" + "temp.jpg");
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uriTempFile);
+        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+
         startActivityForResult(intent, REQUEST_CROP_IMAGE);
     }
 
@@ -494,7 +513,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             // 设置PNG的话，透明区域不会变成黑色
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, fileOutputStream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 60, fileOutputStream);
 
             fileOutputStream.close();
         } catch (Exception e) {
@@ -521,6 +540,26 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             InputMethodManager manager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             manager.hideSoftInputFromWindow(token, InputMethodManager.HIDE_NOT_ALWAYS);
         }
+    }
+
+    // URI转路径
+    private String uri2path(Uri contentURI) {
+        String result;
+        Cursor cursor = null;
+        try {
+            cursor = getContentResolver().query(contentURI, null, null, null, null);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        if (cursor == null) {
+            result = contentURI.getPath();
+        } else {
+            cursor.moveToFirst();
+            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            result = cursor.getString(idx);
+            cursor.close();
+        }
+        return result;
     }
 
 }

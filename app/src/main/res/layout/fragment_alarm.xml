@@ -4,20 +4,94 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!--<TextView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_marginBottom="156px"-->
+        <!--android:background="@color/white"-->
+        <!--android:gravity="center"-->
+        <!--android:text="复习昨天的总结"-->
+        <!--android:textColor="@color/colorText"-->
+        <!--android:textSize="51px" />-->
+
+    <!--<RelativeLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="156px"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:background="@color/fragmentBack">-->
+
+        <!--<LinearLayout-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentStart="true"-->
+            <!--android:layout_marginStart="46px"-->
+            <!--android:layout_centerVertical="true"-->
+            <!--android:orientation="vertical">-->
+
+            <!--<TextView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:gravity="center"-->
+                <!--android:text="每"-->
+                <!--android:textColor="@color/colorText"-->
+                <!--android:textSize="30px" />-->
+
+            <!--<TextView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:gravity="center"-->
+                <!--android:text="天"-->
+                <!--android:textColor="@color/colorText"-->
+                <!--android:textSize="30px" />-->
+
+        <!--</LinearLayout>-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/alertTime"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginStart="85px"-->
+            <!--android:layout_centerVertical="true"-->
+            <!--android:gravity="center"-->
+            <!--android:text="07:50"-->
+            <!--android:textColor="@color/colorText"-->
+            <!--android:textSize="55px" />-->
+
+        <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginStart="516px"-->
+            <!--android:layout_centerVertical="true"-->
+            <!--android:gravity="center"-->
+            <!--android:text="早上复习"-->
+            <!--android:textColor="@color/colorText"-->
+            <!--android:textSize="51px" />-->
+
+    <!--</RelativeLayout>-->
+
+
+
+
+
+
+
+
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="156px"
+        android:layout_marginBottom="52dp"
         android:background="@color/white"
         android:gravity="center"
         android:text="复习昨天的总结"
         android:textColor="@color/colorText"
-        android:textSize="51px" />
+        android:textSize="17sp" />
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="156px"
+        android:layout_height="52dp"
         android:layout_alignParentBottom="true"
         android:background="@color/fragmentBack">
 
@@ -25,7 +99,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_marginStart="46px"
+            android:layout_marginStart="15dp"
             android:layout_centerVertical="true"
             android:orientation="vertical">
 
@@ -35,7 +109,7 @@
                 android:gravity="center"
                 android:text="每"
                 android:textColor="@color/colorText"
-                android:textSize="30px" />
+                android:textSize="10sp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -43,7 +117,7 @@
                 android:gravity="center"
                 android:text="天"
                 android:textColor="@color/colorText"
-                android:textSize="30px" />
+                android:textSize="10sp" />
 
         </LinearLayout>
 
@@ -51,22 +125,22 @@
             android:id="@+id/alertTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="85px"
+            android:layout_marginStart="28dp"
             android:layout_centerVertical="true"
             android:gravity="center"
             android:text="07:50"
             android:textColor="@color/colorText"
-            android:textSize="55px" />
+            android:textSize="18sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="516px"
+            android:layout_marginStart="172dp"
             android:layout_centerVertical="true"
             android:gravity="center"
             android:text="早上复习"
             android:textColor="@color/colorText"
-            android:textSize="51px" />
-
+            android:textSize="17sp" />
     </RelativeLayout>
+
 </RelativeLayout>
