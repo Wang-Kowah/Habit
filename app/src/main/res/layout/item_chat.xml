@@ -4,58 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="right"
-    android:gravity="center_horizontal"
     android:orientation="vertical">
-
-    <!--<TextView-->
-        <!--android:id="@+id/msgDate"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginTop="28px"-->
-        <!--android:gravity="center"-->
-        <!--android:text="2019年3月27日 3:21"-->
-        <!--android:textColor="@color/colorTime"-->
-        <!--android:textSize="14sp" />-->
-
-    <!--<LinearLayout-->
-        <!--android:layout_width="870px"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_gravity="right"-->
-        <!--android:layout_marginTop="10px"-->
-        <!--android:layout_marginRight="43px"-->
-        <!--android:layout_marginBottom="20px"-->
-        <!--android:gravity="right"-->
-        <!--android:orientation="horizontal">-->
-
-        <!--<LinearLayout-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:background="@drawable/chat_bubble"-->
-            <!--android:gravity="center">-->
-
-            <!--<TextView-->
-                <!--android:id="@+id/msg"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:gravity="start|top"-->
-                <!--android:maxWidth="700px"-->
-                <!--android:padding="10px"-->
-                <!--android:text="周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日"-->
-                <!--android:textColor="@color/colorText"-->
-                <!--android:textIsSelectable="true"-->
-                <!--android:textSize="18sp" />-->
-        <!--</LinearLayout>-->
-
-        <!--<de.hdodenhof.circleimageview.CircleImageView-->
-            <!--android:id="@+id/chatProfile"-->
-            <!--android:layout_width="120px"-->
-            <!--android:layout_height="120px"-->
-            <!--android:layout_marginLeft="20px"-->
-            <!--android:src="@mipmap/peiqixxxhdpi"-->
-            <!--app:civ_border_color="#fff"-->
-            <!--app:civ_border_width="2px" />-->
-    <!--</LinearLayout>-->
-
 
     <TextView
         android:id="@+id/msgDate"
@@ -63,6 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="9dp"
         android:gravity="center"
+        android:layout_gravity="center_horizontal"
         android:text="2019年3月27日 3:21"
         android:textColor="@color/colorTime"
         android:textSize="14sp" />
@@ -77,32 +27,40 @@
         android:gravity="right"
         android:orientation="horizontal">
 
-        <LinearLayout
+        <com.daasuu.bl.BubbleLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/chat_bubble"
-            android:gravity="center">
+            android:padding="8dp"
+            app:bl_arrowDirection="right"
+            app:bl_arrowHeight="8dp"
+            app:bl_arrowPosition="16dp"
+            app:bl_arrowWidth="8dp"
+            app:bl_cornersRadius="10dp"
+            app:bl_strokeColor="@color/colorText"
+            app:bl_strokeWidth="1dp">
 
             <TextView
                 android:id="@+id/msg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="start|top"
-                android:maxWidth="233dp"
-                android:padding="3dp"
+                android:maxWidth="220dp"
                 android:text="周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日"
                 android:textColor="@color/colorText"
                 android:textIsSelectable="true"
                 android:textSize="18sp" />
-        </LinearLayout>
+
+        </com.daasuu.bl.BubbleLayout>
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/chatProfile"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginLeft="7dp"
+            android:layout_marginLeft="4dp"
             android:src="@mipmap/peiqixxxhdpi"
-            app:civ_border_color="#fff"
+            app:civ_border_color="@color/white"
             app:civ_border_width="1dp" />
+
     </LinearLayout>
+
 </LinearLayout>

@@ -2,7 +2,6 @@ package com.kowah.habit.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,15 +21,19 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.codbking.widget.DatePickDialog;
+import com.codbking.widget.OnSureLisener;
+import com.codbking.widget.bean.DateType;
 import com.kowah.habit.R;
 import com.kowah.habit.service.RetrofitService;
 import com.kowah.habit.utils.DateUtils;
@@ -41,6 +44,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -94,10 +98,21 @@ public class ChatFragment extends Fragment {
             timeButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
-
+                    DatePickDialog dialog = new DatePickDialog(getContext());
+                    //设置标题
+                    dialog.setTitle("选择闹钟时间");
+                    //设置类型
+                    dialog.setType(DateType.TYPE_HM);
+                    //设置消息体的显示格式，日期格式
+                    dialog.setMessageFormat("每天  HH:mm");
+                    //设置选择回调
+                    dialog.setOnChangeLisener(null);
+                    //设置点击确定按钮回调
+                    dialog.setOnSureLisener(new OnSureLisener() {
                         @Override
-                        public void onTimeSet(TimePicker view, int hour, int minute) {
+                        public void onSure(Date date) {
+                            int hour = date.getHours(), minute = date.getMinutes();
+
                             String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
                             timeButton.setText(time);
                             Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
@@ -105,7 +120,6 @@ public class ChatFragment extends Fragment {
                             if (!time.equals(sharedPreferences.getString("time1", "22:30"))) {
                                 toast.setText("闹钟设置成功，请手动删除旧闹钟");
                             }
-                            toast.show();
                             toast.show();
 
                             editor.putString("time1", time);
@@ -118,8 +132,10 @@ public class ChatFragment extends Fragment {
                                     showAlarm();
                                 }
                             }, 300);
+
                         }
-                    }, 0, 0, true).show();
+                    });
+                    dialog.show();
                 }
             });
 
@@ -136,14 +152,25 @@ public class ChatFragment extends Fragment {
                     final String[] dayInWeek = {"周一", "周二", "周三", "周四", "周五", "周六", "周日"};
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setItems(dayInWeek, new DialogInterface.OnClickListener() {
+                    AlertDialog alertDialog = builder.setItems(dayInWeek, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, final int selected) {
                             final String daySelected = dayInWeek[selected].substring(1);
-                            new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
-
+                            DatePickDialog weekDialog = new DatePickDialog(getContext());
+                            //设置标题
+                            weekDialog.setTitle("选择闹钟时间");
+                            //设置类型
+                            weekDialog.setType(DateType.TYPE_HM);
+                            //设置消息体的显示格式，日期格式
+                            weekDialog.setMessageFormat("每" + dayInWeek[selected] + "  HH:mm");
+                            //设置选择回调
+                            weekDialog.setOnChangeLisener(null);
+                            //设置点击确定按钮回调
+                            weekDialog.setOnSureLisener(new OnSureLisener() {
                                 @Override
-                                public void onTimeSet(TimePicker view, int hour, int minute) {
+                                public void onSure(Date date) {
+                                    int hour = date.getHours(), minute = date.getMinutes();
+
                                     String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
                                     timeButton.setText(time);
                                     dateTextView.setText(daySelected);
@@ -152,7 +179,6 @@ public class ChatFragment extends Fragment {
                                     if (!time.equals(sharedPreferences.getString("time2", "18:50")) || !daySelected.equals(sharedPreferences.getString("dayInWeek", "六"))) {
                                         toast.setText("闹钟设置成功，请手动删除旧闹钟");
                                     }
-                                    toast.show();
                                     toast.show();
 
                                     editor.putString("dayInWeek", daySelected);
@@ -167,9 +193,17 @@ public class ChatFragment extends Fragment {
                                         }
                                     }, 300);
                                 }
-                            }, 0, 0, true).show();
+                            });
+                            weekDialog.show();
                         }
-                    }).setTitle("选择要做总结的时间").show();
+                    }).setTitle("选择要做总结的时间").create();
+                    alertDialog.show();
+
+                    // 设置宽度
+                    WindowManager.LayoutParams layoutParams = alertDialog.getWindow().getAttributes();
+                    layoutParams.width = getResources().getDisplayMetrics().widthPixels * 5 / 6;
+                    layoutParams.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                    alertDialog.getWindow().setAttributes(layoutParams);
                 }
             });
 
