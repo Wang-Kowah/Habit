@@ -210,6 +210,18 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             }
         });
 
+        mLastProfilePath = sharedPreferences.getString("mLastProfilePath", "");
+        File file = new File(mLastProfilePath);
+        if (file.exists()) {
+            Bitmap bitmap = null; //从本地取图片
+            try {
+                bitmap = BitmapFactory.decodeStream(new FileInputStream(file));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            profile.setImageBitmap(bitmap); //设置Bitmap为头像
+        }
+
         retrofitService = new Retrofit.Builder()
                 .baseUrl("http://119.29.77.201/habit/")
                 .build()
@@ -384,7 +396,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
                                 SharedPreferences.Editor editor = sharedPreferences.edit();
                                 editor.putString("mLastProfilePath", mLastProfilePath);
-                                editor.commit();
+                                editor.apply();
                             }
                         }
                     });

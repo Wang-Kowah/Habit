@@ -328,7 +328,7 @@ public class ChatFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
             holder.msg.setText(msgList.get(position));
 
             // 确定昨天跟今天的时间显示格式
@@ -353,12 +353,13 @@ public class ChatFragment extends Fragment {
                 holder.profile.setImageBitmap(bitmap); //设置Bitmap为头像
             }
 
-//            holder.itemView.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    System.out.println(position);
-//                }
-//            });
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    holder.itemView.requestFocus();
+                    holder.itemView.clearFocus();
+                }
+            });
 
         }
 
