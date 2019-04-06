@@ -18,15 +18,17 @@
                 android:id="@+id/keywordDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="30px"
+                android:layout_marginTop="13dp"
                 android:gravity="center"
                 android:text="昨天"
                 android:textColor="@color/colorTime"
                 android:textSize="14sp" />
 
             <View
-                android:layout_width="500px"
-                android:layout_height="2px"
+                android:layout_width="140dp"
+                android:layout_height="1px"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="5dp"
                 android:background="@color/colorTime" />
 
             <TextView
@@ -50,7 +52,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10px"
+                android:layout_marginTop="5dp"
                 android:gravity="center"
                 android:text="关键词"
                 android:textColor="@color/colorTime"
@@ -60,19 +62,19 @@
                 android:id="@+id/keywordAll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
                 android:gravity="center"
-                android:text="奋斗 改革开放 务实 努力 机会"
                 android:maxWidth="300dp"
+                android:text="奋斗 改革开放 务实 努力 机会"
                 android:textColor="@color/colorText"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="40px"/>
+                android:textStyle="bold" />
 
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="7px"
+            android:layout_height="2dp"
             android:background="@color/fragmentBack" />
     </android.support.v7.widget.CardView>
 

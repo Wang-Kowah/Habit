@@ -124,15 +124,17 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void updateActivity(int tab) {
+        if (currentTab == tab) {
+//            recyclerView.smoothScrollToPosition(0);
+            return;
+        }
+
         pageNum = 1;
         currentTab = tab;
         buttonOne.setTextColor(getColor(R.color.colorText));
         buttonTwo.setTextColor(getColor(R.color.colorText));
         buttonThree.setTextColor(getColor(R.color.colorText));
         buttonList.get(tab).setTextColor(getColor(R.color.colorPrimary));
-
-//        final ArrayList<String> dateList = new ArrayList<>(Arrays.asList("周一", "周二", "周三", "周四", "周五", "周六", "周日"));
-//        final ArrayList<String> keywords = new ArrayList<>(Arrays.asList("1", "2", "3"));
 
         dateList = new ArrayList<>();
         keywords = new ArrayList<>();
@@ -215,6 +217,7 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
 
                                 adapter.addFooterItem(dates, keys);
 //                                recyclerView.scrollToPosition(dateList.size() - 1);
+                                adapter.setFooterVisibility(View.GONE);
                             }
                         }
                     }
@@ -229,11 +232,14 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
                     toast.setText("网络异常，请稍后重试");
                     toast.show();
                     e.printStackTrace();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
+                adapter.setFooterVisibility(View.GONE);
                 Toast toast = Toast.makeText(KeywordActivity.this, "网络异常，请稍后重试", Toast.LENGTH_SHORT);
                 toast.setText("网络异常，请稍后重试");
                 toast.show();
@@ -283,7 +289,7 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
                 // 统计日期固定为周日与每月最后一天
                 if (currentTab == 0 && date == Integer.parseInt(DateUtils.formatDate(DateUtils.getDayBeginTimestamp(now, 1), "yyyyMMdd"))) {
                     itemViewHolder.keywordDate.setText("昨天");
-                } else if (currentTab == 1 &&  date == Integer.parseInt(DateUtils.formatDate(DateUtils.getLastSundayTimestamp(now), "yyyyMMdd"))) {
+                } else if (currentTab == 1 && date == Integer.parseInt(DateUtils.formatDate(DateUtils.getLastSundayTimestamp(now), "yyyyMMdd"))) {
                     itemViewHolder.keywordDate.setText("上周");
                 } else if (currentTab == 2 && date == Integer.parseInt(DateUtils.formatDate(DateUtils.getMonthEndTimestamp(now, -1), "yyyyMMdd"))) {
                     itemViewHolder.keywordDate.setText("上月");

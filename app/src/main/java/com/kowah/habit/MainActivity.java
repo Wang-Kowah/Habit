@@ -1,6 +1,9 @@
 package com.kowah.habit;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,6 +27,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -39,8 +43,8 @@ import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kowah.habit.fragment.AlarmFragment;
 import com.kowah.habit.fragment.ChatFragment;
+import com.kowah.habit.fragment.ReviewFragment;
 import com.kowah.habit.service.RetrofitService;
 import com.kowah.habit.utils.FileUtils;
 import com.xiasuhuei321.loadingdialog.view.LoadingDialog;
@@ -77,7 +81,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
     // 三个Fragment（页面）
     ChatFragment chatFragment;
-    AlarmFragment alarmFragment;
+    ReviewFragment reviewFragment;
     ChatFragment thirdFragment;
 
     // 页面以及按钮集合
@@ -180,12 +184,12 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         bundle.putInt("tab", 0);
         chatFragment = new ChatFragment();
         chatFragment.setArguments(bundle);
-        alarmFragment = new AlarmFragment();
+        reviewFragment = new ReviewFragment();
         thirdFragment = new ChatFragment();
 
         fragmentList = new ArrayList<>();
         fragmentList.add(chatFragment);
-        fragmentList.add(alarmFragment);
+        fragmentList.add(reviewFragment);
         fragmentList.add(thirdFragment);
 
         mFragmentManager = getSupportFragmentManager();
@@ -229,7 +233,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
         updateProfile();
         changeView(0);
-
     }
 
     @Override
@@ -641,4 +644,39 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         }
     }
 
+    //TODO intent的Extra传递失败，此处只能拿到-1
+    @Override
+    protected void onNewIntent(Intent intent) {
+        setIntent(intent);
+        int tab = intent.getIntExtra("tab", -1);
+        Log.e("tab",tab+"set");
+        super.onNewIntent(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 闹钟跳转
+        Intent intent = getIntent();
+        int tab = intent.getIntExtra("tab", -1);
+        Log.e("tab",tab+"get");
+        if (tab != -1) {
+            changeView(tab);
+
+            new AlertDialog.Builder(mContext)
+                    .setTitle("闹钟时间到")
+                    .setMessage("定时总结，养成习惯")
+                    .setPositiveButton("好的", null)
+                    .setCancelable(false)
+                    .show();
+
+            // 重复设定闹钟
+            Intent newAlarm = new Intent(mContext, RingReceiver.class);
+            newAlarm.setAction("com.kowah.habit.Ring");
+            newAlarm.putExtra("tab", tab);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, tab, newAlarm, PendingIntent.FLAG_UPDATE_CURRENT);
+            AlarmManager alarmManager = (AlarmManager) mContext.getApplicationContext().getSystemService(Service.ALARM_SERVICE);
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), pendingIntent);
+        }
+    }
 }

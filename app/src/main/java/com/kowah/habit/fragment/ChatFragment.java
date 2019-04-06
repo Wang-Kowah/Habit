@@ -1,7 +1,10 @@
 package com.kowah.habit.fragment;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,6 +38,7 @@ import com.codbking.widget.DatePickDialog;
 import com.codbking.widget.OnSureLisener;
 import com.codbking.widget.bean.DateType;
 import com.kowah.habit.R;
+import com.kowah.habit.RingReceiver;
 import com.kowah.habit.service.RetrofitService;
 import com.kowah.habit.utils.DateUtils;
 
@@ -61,6 +65,7 @@ public class ChatFragment extends Fragment {
 
     SharedPreferences sharedPreferences;
     RetrofitService retrofitService;
+    AlarmManager alarmManager;
     MsgAdapter adapter;
     RecyclerView recyclerView;
     SwipeRefreshLayout swipeRefreshLayout;
@@ -84,6 +89,8 @@ public class ChatFragment extends Fragment {
         sentMsgNum = 0;
         msgList = new LinkedList<>();
         dateList = new LinkedList<>();
+
+        alarmManager = (AlarmManager) getActivity().getApplicationContext().getSystemService(Service.ALARM_SERVICE);
 
         sharedPreferences = getActivity().getSharedPreferences("user_data", MODE_PRIVATE);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -125,6 +132,7 @@ public class ChatFragment extends Fragment {
                             editor.putString("time1", time);
                             editor.apply();
 
+                            setBroadcastAlarm(hour, minute);
                             createAlarm("每天总结", hour, minute, -1);
                             new Handler().postDelayed(new Runnable() {
                                 @Override
@@ -185,6 +193,7 @@ public class ChatFragment extends Fragment {
                                     editor.putString("time2", time);
                                     editor.apply();
 
+                                    setBroadcastAlarm(hour, minute);
                                     createAlarm("每周总结", hour, minute, selected);
                                     new Handler().postDelayed(new Runnable() {
                                         @Override
@@ -437,13 +446,14 @@ public class ChatFragment extends Fragment {
                             swipeRefreshLayout.setRefreshing(false);
                         }
                     }, 600);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
+                swipeRefreshLayout.setRefreshing(false);
                 Toast toast = Toast.makeText(getContext(), "网络异常，请稍后重试", Toast.LENGTH_SHORT);
                 toast.setText("网络异常，请稍后重试");
                 toast.show();
@@ -505,6 +515,21 @@ public class ChatFragment extends Fragment {
         if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
             startActivity(intent);
         }
+    }
+
+    // 设置闹钟广播
+    private void setBroadcastAlarm(int hour, int minutes) {
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.HOUR_OF_DAY, hour);
+        c.set(Calendar.MINUTE, minutes);
+        c.set(Calendar.SECOND, 0);
+
+        Intent intent = new Intent(this.getActivity(), RingReceiver.class);
+        intent.setAction("com.kowah.habit.Ring");
+        intent.putExtra("tab", currentTab);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this.getActivity(), currentTab, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(c.getTimeInMillis(),pendingIntent) ,pendingIntent);
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
     }
 
 }

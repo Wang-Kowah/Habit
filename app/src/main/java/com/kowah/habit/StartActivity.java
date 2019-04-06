@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Spannable;
@@ -29,10 +30,11 @@ public class StartActivity extends AppCompatActivity {
         long mLastOpenApp = sharedPreferences.getLong("mLastOpenApp", -1);
         long now = System.currentTimeMillis();
 
+        TextView skipButton = findViewById(R.id.skip_button);
+
         // 首次安装时打开，否则只在每周一出现一次
         if (mLastOpenApp == -1 || (DateUtils.isMonday(now) && mLastOpenApp < DateUtils.getDayBeginTimestamp(now, 0))) {
 
-            TextView skipButton = findViewById(R.id.skip_button);
             skipButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -46,7 +48,13 @@ public class StartActivity extends AppCompatActivity {
             editor.putLong("mLastOpenApp", now);
             editor.apply();
         } else {
-            getHome();
+            skipButton.setVisibility(View.GONE);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getHome();
+                }
+            }, 1000);
         }
     }
 

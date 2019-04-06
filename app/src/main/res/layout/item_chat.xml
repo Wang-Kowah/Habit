@@ -10,9 +10,9 @@
         android:id="@+id/msgDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:layout_marginTop="9dp"
         android:gravity="center"
-        android:layout_gravity="center_horizontal"
         android:text="2019年3月27日 3:21"
         android:textColor="@color/colorTime"
         android:textSize="14sp" />
@@ -21,9 +21,9 @@
         android:layout_width="290dp"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:layout_marginTop="3dp"
-        android:layout_marginRight="14dp"
-        android:layout_marginBottom="7dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginRight="13dp"
+        android:layout_marginBottom="6dp"
         android:gravity="right"
         android:orientation="horizontal">
 
@@ -43,12 +43,12 @@
                 android:id="@+id/msg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="start|top"
-                android:maxWidth="220dp"
+                android:gravity="start"
+                android:maxWidth="210dp"
                 android:text="周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日"
                 android:textColor="@color/colorText"
                 android:textIsSelectable="true"
-                android:textSize="18sp" />
+                android:textSize="17sp" />
 
         </com.daasuu.bl.BubbleLayout>
 

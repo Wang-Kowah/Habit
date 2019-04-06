@@ -30,7 +30,7 @@ import java.util.Locale;
 
 import static android.content.Context.MODE_PRIVATE;
 
-public class AlarmFragment extends Fragment {
+public class ReviewFragment extends Fragment {
 
     private AlarmManager alarmManager;
 
@@ -43,7 +43,7 @@ public class AlarmFragment extends Fragment {
         final SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_data", MODE_PRIVATE);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        View view = inflater.inflate(R.layout.fragment_alarm, container, false);
+        View view = inflater.inflate(R.layout.fragment_review, container, false);
         final TextView alertTime = view.findViewById(R.id.alertTime);
 
         alertTime.setText(sharedPreferences.getString("alertTime", "07:50"));
@@ -76,6 +76,7 @@ public class AlarmFragment extends Fragment {
                         editor.putString("alertTime", time);
                         editor.apply();
 
+                        setBroadcastAlarm(hour, minute);
                         createAlarm("早上复习", hour, minute);
                         new Handler().postDelayed(new Runnable() {
                             @Override
@@ -126,17 +127,17 @@ public class AlarmFragment extends Fragment {
         }
     }
 
-    private void setAlarm(String message, int hour, int minutes) {
+    // 设置闹钟广播
+    private void setBroadcastAlarm(int hour, int minutes) {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.HOUR_OF_DAY, hour);
         c.set(Calendar.MINUTE, minutes);
+        c.set(Calendar.SECOND,0);
 
         Intent intent = new Intent(this.getActivity(), RingReceiver.class);
         intent.setAction("com.kowah.habit.Ring");
         intent.putExtra("tab", 1);
-        intent.putExtra("msg", message);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this.getActivity(), 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-//        alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(c.getTimeInMillis(),pendingIntent) ,pendingIntent);
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
     }
 
