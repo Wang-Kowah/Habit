@@ -13,120 +13,13 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".LoginActivity">
 
-
-    <!--<ImageView-->
-        <!--android:layout_width="149px"-->
-        <!--android:layout_height="149px"-->
-        <!--android:layout_marginTop="360px"-->
-        <!--android:layout_marginBottom="250px"-->
-        <!--android:contentDescription="logo"-->
-        <!--app:srcCompat="@drawable/yuanjiao144144" />-->
-
-    <!--<LinearLayout-->
-        <!--android:id="@+id/mobile_login_form"-->
-        <!--android:layout_width="818px"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:gravity="center"-->
-        <!--android:orientation="vertical">-->
-
-        <!--<android.support.design.widget.TextInputLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content">-->
-
-            <!--<EditText-->
-                <!--android:id="@+id/mobile"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:hint="@string/prompt_mobile"-->
-                <!--android:imeOptions="actionNext"-->
-                <!--android:inputType="number"-->
-                <!--android:maxLength="11"-->
-                <!--android:maxLines="1"-->
-                <!--android:singleLine="true" />-->
-
-        <!--</android.support.design.widget.TextInputLayout>-->
-
-        <!--<android.support.design.widget.TextInputLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginTop="50px">-->
-
-            <!--<RelativeLayout-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="match_parent">-->
-
-                <!--<EditText-->
-                    <!--android:id="@+id/code"-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:hint="@string/prompt_code"-->
-                    <!--android:imeOptions="actionDone"-->
-                    <!--android:inputType="number"-->
-                    <!--android:maxLength="4"-->
-                    <!--android:maxLines="1"-->
-                    <!--android:singleLine="true" />-->
-
-                <!--<TextView-->
-                    <!--android:id="@+id/getCode"-->
-                    <!--android:layout_width="145px"-->
-                    <!--android:layout_height="70px"-->
-                    <!--android:layout_alignParentEnd="true"-->
-                    <!--android:layout_centerVertical="true"-->
-                    <!--android:layout_marginEnd="15px"-->
-                    <!--android:background="@color/white"-->
-                    <!--android:gravity="center"-->
-                    <!--android:text="@string/getCode"-->
-                    <!--android:textColor="@color/colorTime"-->
-                    <!--android:textSize="29px" />-->
-            <!--</RelativeLayout>-->
-
-        <!--</android.support.design.widget.TextInputLayout>-->
-
-        <!--<LinearLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="50px"-->
-            <!--android:layout_marginLeft="5px"-->
-            <!--android:gravity="center_vertical">-->
-
-            <!--<TextView-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="match_parent"-->
-                <!--android:gravity="center"-->
-                <!--android:text="点击登录，即表示已阅读并同意"-->
-                <!--android:textColor="@color/colorTime"-->
-                <!--android:textSize="24px" />-->
-
-            <!--<TextView-->
-                <!--android:id="@+id/termsbutton"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="match_parent"-->
-                <!--android:gravity="center"-->
-                <!--android:text="《用户协议》"-->
-                <!--android:textColor="@color/colorPrimary"-->
-                <!--android:textSize="24px" />-->
-        <!--</LinearLayout>-->
-
-        <!--<Button-->
-            <!--android:id="@+id/sign_in_button"-->
-            <!--style="?android:textAppearanceSmall"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="110px"-->
-            <!--android:layout_marginTop="126px"-->
-            <!--android:background="@mipmap/loginbuttoon_xxxhdpi"-->
-            <!--android:text="@string/action_sign_in"-->
-            <!--android:textColor="@color/white"-->
-            <!--android:textSize="45px" />-->
-
-    <!--</LinearLayout>-->
-
-
     <ImageView
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginTop="120dp"
         android:layout_marginBottom="83dp"
         android:contentDescription="logo"
-        app:srcCompat="@drawable/yuanjiao144144" />
+        app:srcCompat="@mipmap/yuanjiao" />
 
     <LinearLayout
         android:id="@+id/mobile_login_form"
@@ -218,7 +111,7 @@
             android:layout_width="match_parent"
             android:layout_height="36dp"
             android:layout_marginTop="42dp"
-            android:background="@mipmap/loginbuttoon_xxxhdpi"
+            android:background="@mipmap/loginbuttoon"
             android:text="@string/action_sign_in"
             android:textColor="@color/white"
             android:textSize="15sp" />

@@ -21,7 +21,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.kowah.habit.service.RetrofitService;
 import com.kowah.habit.utils.DateUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -206,6 +205,12 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
                             Toast toast = Toast.makeText(KeywordActivity.this, "没有更多消息啦", Toast.LENGTH_SHORT);
                             toast.setText("没有更多消息啦");
                             toast.show();
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    adapter.setFooterVisibility(View.GONE);
+                                }
+                            }, 1200);
                         } else {
                             JSONArray jsonArray = result.getJSONArray("list");
                             for (int i = 0; i < jsonArray.size(); i++) {
@@ -221,18 +226,7 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
                             }
                         }
                     }
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            adapter.setFooterVisibility(View.GONE);
-                        }
-                    }, 1200);
-                } catch (IOException e) {
-                    Toast toast = Toast.makeText(KeywordActivity.this, "网络异常，请稍后重试", Toast.LENGTH_SHORT);
-                    toast.setText("网络异常，请稍后重试");
-                    toast.show();
-                    e.printStackTrace();
-                } catch (NullPointerException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

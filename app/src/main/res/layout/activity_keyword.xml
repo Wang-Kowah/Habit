@@ -6,83 +6,6 @@
     android:orientation="vertical"
     tools:context=".KeywordActivity">
 
-    <!--<android.support.v7.widget.Toolbar-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="144px"-->
-        <!--android:layout_marginLeft="-40px"-->
-        <!--android:background="@color/colorPrimary">-->
-
-        <!--<LinearLayout-->
-            <!--android:id="@+id/returnbutton"-->
-            <!--android:layout_width="144px"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:paddingHorizontal="25px"-->
-            <!--android:paddingVertical="25px">-->
-
-            <!--<ImageView-->
-                <!--android:layout_width="60px"-->
-                <!--android:layout_height="60px"-->
-                <!--android:layout_marginLeft="25px"-->
-                <!--android:layout_marginTop="15px"-->
-                <!--android:src="@mipmap/returnxxxhdpi" />-->
-        <!--</LinearLayout>-->
-
-        <!--<TextView-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginStart="350px"-->
-            <!--android:text="关键词"-->
-            <!--android:textColor="@color/white"-->
-            <!--android:textSize="55px" />-->
-
-    <!--</android.support.v7.widget.Toolbar>-->
-
-    <!--&lt;!&ndash; 三个导航按钮 &ndash;&gt;-->
-    <!--<LinearLayout-->
-        <!--android:id="@+id/ll_tabs2"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="110px"-->
-        <!--android:orientation="horizontal">-->
-
-        <!--<Button-->
-            <!--android:id="@+id/btn_one2"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:layout_weight="1"-->
-            <!--android:background="@color/fragmentBack"-->
-            <!--android:text="每天"-->
-            <!--android:textColor="@color/colorPrimary"-->
-            <!--android:textSize="51px" />-->
-
-        <!--<Button-->
-            <!--android:id="@+id/btn_two2"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:layout_weight="1"-->
-            <!--android:background="@color/fragmentBack"-->
-            <!--android:text="每周"-->
-            <!--android:textColor="@color/colorText"-->
-            <!--android:textSize="51px" />-->
-
-        <!--<Button-->
-            <!--android:id="@+id/btn_three2"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:layout_weight="1"-->
-            <!--android:background="@color/fragmentBack"-->
-            <!--android:text="每月"-->
-            <!--android:textColor="@color/colorText"-->
-            <!--android:textSize="51px" />-->
-    <!--</LinearLayout>-->
-
-    <!--<android.support.v7.widget.RecyclerView-->
-        <!--android:id="@+id/keywordRecyclerView"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent">-->
-
-    <!--</android.support.v7.widget.RecyclerView>-->
-
-
     <android.support.v7.widget.Toolbar
         android:layout_width="match_parent"
         android:layout_height="48dp"
@@ -101,7 +24,7 @@
                 android:layout_height="20dp"
                 android:layout_marginLeft="8dp"
                 android:layout_marginTop="5dp"
-                android:src="@mipmap/returnxxxhdpi" />
+                android:src="@mipmap/return_button" />
         </LinearLayout>
 
         <TextView
