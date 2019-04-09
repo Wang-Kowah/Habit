@@ -10,6 +10,7 @@ import android.provider.AlarmClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,8 +76,14 @@ public class ReviewFragment extends Fragment {
                         editor.putString("alertTime", time);
                         editor.apply();
 
-//                        setBroadcastAlarm(hour, minute);
                         createAlarm("早上复习", hour, minute);
+                        new AlertDialog.Builder(getContext())
+                                .setTitle("已为您设置新的闹钟")
+                                .setMessage("时间为：每天" + time + "\n\n别忘了手动删除旧闹钟喔")
+                                .setPositiveButton("我知道了", null)
+                                .setCancelable(false)
+                                .show();
+//                        setBroadcastAlarm(hour, minute);
 //                        new Handler().postDelayed(new Runnable() {
 //                            @Override
 //                            public void run() {
