@@ -454,7 +454,7 @@ public class ChatFragment extends Fragment {
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 swipeRefreshLayout.setRefreshing(false);
-                Toast toast = Toast.makeText(getContext(), "网络异常，请稍后重试", Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(getActivity(), "网络异常，请稍后重试", Toast.LENGTH_SHORT);
                 toast.setText("网络异常，请稍后重试");
                 toast.show();
                 t.printStackTrace();

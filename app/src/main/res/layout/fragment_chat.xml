@@ -25,22 +25,22 @@
         android:layout_alignParentBottom="true"
         android:background="@color/fragmentBack">
 
-        <RelativeLayout
+        <LinearLayout
             android:id="@+id/dateButton"
             android:layout_width="90dp"
             android:layout_height="52dp"
             android:layout_gravity="bottom|left"
-            android:background="@color/fragmentBack">
+            android:background="@color/fragmentBack"
+            android:gravity="center">
 
             <LinearLayout
                 android:id="@+id/week"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:paddingStart="15dp">
+                android:paddingLeft="5dp"
+                android:paddingRight="3dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -65,12 +65,11 @@
                 android:id="@+id/timeButton"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_marginStart="29dp"
                 android:gravity="center"
                 android:text="22:30"
                 android:textColor="@color/colorText"
                 android:textSize="18sp" />
-        </RelativeLayout>
+        </LinearLayout>
 
         <EditText
             android:id="@+id/input_node"
