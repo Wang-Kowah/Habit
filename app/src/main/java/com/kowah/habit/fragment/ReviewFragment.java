@@ -6,7 +6,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.AlarmClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -76,14 +75,14 @@ public class ReviewFragment extends Fragment {
                         editor.putString("alertTime", time);
                         editor.apply();
 
-                        setBroadcastAlarm(hour, minute);
+//                        setBroadcastAlarm(hour, minute);
                         createAlarm("早上复习", hour, minute);
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                showAlarm();
-                            }
-                        }, 300);
+//                        new Handler().postDelayed(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                showAlarm();
+//                            }
+//                        }, 300);
                     }
                 });
                 dialog.show();
@@ -132,7 +131,7 @@ public class ReviewFragment extends Fragment {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.HOUR_OF_DAY, hour);
         c.set(Calendar.MINUTE, minutes);
-        c.set(Calendar.SECOND,0);
+        c.set(Calendar.SECOND, 0);
 
         Intent intent = new Intent(this.getActivity(), RingReceiver.class);
         intent.setAction("com.kowah.habit.Ring");

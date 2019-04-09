@@ -1,9 +1,5 @@
 package com.kowah.habit;
 
-import android.Manifest;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,7 +14,6 @@ import android.provider.AlarmClock;
 import android.provider.MediaStore;
 import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -27,7 +22,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -116,123 +110,116 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         setContentView(R.layout.activity_main);
         mContext = MainActivity.this;
 
-        // 动态申请权限
-        ActivityCompat.requestPermissions(this, new String[]{
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA
-        }, RESULT_FIRST_USER);
-
         // 未登录时跳转
         sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         uid = sharedPreferences.getInt("uid", -1);
         if (uid == -1) {
             navigateTo(LoginActivity.class);
             finish();
-        }
+        } else {
+            // 首次打开设置三个默认闹钟
+            if (sharedPreferences.getString("alertTime", "").equals("")) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("alertTime", "7:50");
+                editor.apply();
 
-        // 首次打开设置三个默认闹钟
-        if (sharedPreferences.getString("alertTime", "").equals("")) {
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString("alertTime", "7:50");
-            editor.apply();
+                createAlarm("每天总结", 22, 30, -1);
+                createAlarm("早上复习", 7, 50, -1);
+                createAlarm("每周总结", 18, 50, 5);
 
-            createAlarm("每天总结", 22, 30, -1);
-            createAlarm("早上复习", 7, 50, -1);
-            createAlarm("每周总结", 18, 50, 5);
+                new AlertDialog.Builder(mContext)
+                        .setTitle("已为您设置三个默认闹钟")
+                        .setMessage("闹钟用途为提醒您定时进行总结，可点击左下角自行更改提醒时间\n\n每天总结  每天22:30\n早上复习  每天07:50\n每周总结  周六18:50")
+                        .setPositiveButton("我知道了", null)
+                        .setCancelable(false)
+                        .show();
+            }
 
-            new AlertDialog.Builder(mContext)
-                    .setTitle("已为您设置默认闹钟")
-                    .setMessage("此闹钟用途为提醒您定时进行总结，可点击左下角自行更改提醒时间")
-                    .setPositiveButton("好的", null)
-                    .setCancelable(false)
-                    .show();
-        }
+            buttonOne = findViewById(R.id.btn_one);
+            buttonTwo = findViewById(R.id.btn_two);
+            buttonThree = findViewById(R.id.btn_three);
+            profile = findViewById(R.id.user);
+            keyword = findViewById(R.id.keywordButton);
 
-        buttonOne = findViewById(R.id.btn_one);
-        buttonTwo = findViewById(R.id.btn_two);
-        buttonThree = findViewById(R.id.btn_three);
-        profile = findViewById(R.id.user);
-        keyword = findViewById(R.id.keywordButton);
-
-        buttonOne.setOnClickListener(this);
-        buttonTwo.setOnClickListener(this);
-        buttonThree.setOnClickListener(this);
-        profile.setOnClickListener(this);
-        keyword.setOnClickListener(this);
-        keyword.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    keyword.setBackground(getDrawable(R.color.colorText));
-                    keyword.setAlpha(0.3F);
+            buttonOne.setOnClickListener(this);
+            buttonTwo.setOnClickListener(this);
+            buttonThree.setOnClickListener(this);
+            profile.setOnClickListener(this);
+            keyword.setOnClickListener(this);
+            keyword.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        keyword.setBackground(getDrawable(R.color.colorText));
+                        keyword.setAlpha(0.3F);
+                    }
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        keyword.setBackground(getDrawable(R.color.colorPrimary));
+                        keyword.setAlpha(1);
+                    }
+                    return false;
                 }
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    keyword.setBackground(getDrawable(R.color.colorPrimary));
-                    keyword.setAlpha(1);
+            });
+
+            buttonList = new ArrayList<>();
+            buttonList.add(buttonOne);
+            buttonList.add(buttonTwo);
+            buttonList.add(buttonThree);
+
+            Bundle bundle = new Bundle();
+            bundle.putInt("tab", 0);
+            chatFragment = new ChatFragment();
+            chatFragment.setArguments(bundle);
+            reviewFragment = new ReviewFragment();
+            thirdFragment = new ChatFragment();
+
+            fragmentList = new ArrayList<>();
+            fragmentList.add(chatFragment);
+            fragmentList.add(reviewFragment);
+            fragmentList.add(thirdFragment);
+
+            mFragmentManager = getSupportFragmentManager();
+            mViewPager = findViewById(R.id.viewpager);
+            mViewPager.setAdapter(new MyFragmentStatePagerAdapter(mFragmentManager));
+            mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                @Override
+                public void onPageScrolled(int i, float v, int i1) {
                 }
-                return false;
-            }
-        });
 
-        buttonList = new ArrayList<>();
-        buttonList.add(buttonOne);
-        buttonList.add(buttonTwo);
-        buttonList.add(buttonThree);
+                @Override
+                public void onPageScrollStateChanged(int i) {
+                }
 
-        Bundle bundle = new Bundle();
-        bundle.putInt("tab", 0);
-        chatFragment = new ChatFragment();
-        chatFragment.setArguments(bundle);
-        reviewFragment = new ReviewFragment();
-        thirdFragment = new ChatFragment();
+                @Override
+                public void onPageSelected(int i) {
+                    // 更新按钮颜色
+                    buttonOne.setTextColor(getColor(R.color.colorText));
+                    buttonTwo.setTextColor(getColor(R.color.colorText));
+                    buttonThree.setTextColor(getColor(R.color.colorText));
+                    buttonList.get(i).setTextColor(getColor(R.color.colorPrimary));
+                }
+            });
 
-        fragmentList = new ArrayList<>();
-        fragmentList.add(chatFragment);
-        fragmentList.add(reviewFragment);
-        fragmentList.add(thirdFragment);
-
-        mFragmentManager = getSupportFragmentManager();
-        mViewPager = findViewById(R.id.viewpager);
-        mViewPager.setAdapter(new MyFragmentStatePagerAdapter(mFragmentManager));
-        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int i, float v, int i1) {
+            mLastProfilePath = sharedPreferences.getString("mLastProfilePath", "");
+            File file = new File(mLastProfilePath);
+            if (file.exists()) {
+                Bitmap bitmap; //从本地取图片
+                try {
+                    bitmap = BitmapFactory.decodeStream(new FileInputStream(file));
+                    profile.setImageBitmap(bitmap); //设置Bitmap为头像
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
 
-            @Override
-            public void onPageScrollStateChanged(int i) {
-            }
+            retrofitService = new Retrofit.Builder()
+                    .baseUrl("http://119.29.77.201/habit/")
+                    .build()
+                    .create(RetrofitService.class);
 
-            @Override
-            public void onPageSelected(int i) {
-                // 更新按钮颜色
-                buttonOne.setTextColor(getColor(R.color.colorText));
-                buttonTwo.setTextColor(getColor(R.color.colorText));
-                buttonThree.setTextColor(getColor(R.color.colorText));
-                buttonList.get(i).setTextColor(getColor(R.color.colorPrimary));
-            }
-        });
-
-        mLastProfilePath = sharedPreferences.getString("mLastProfilePath", "");
-        File file = new File(mLastProfilePath);
-        if (file.exists()) {
-            Bitmap bitmap = null; //从本地取图片
-            try {
-                bitmap = BitmapFactory.decodeStream(new FileInputStream(file));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            profile.setImageBitmap(bitmap); //设置Bitmap为头像
+            updateProfile();
+            changeView(0);
         }
-
-        retrofitService = new Retrofit.Builder()
-                .baseUrl("http://119.29.77.201/habit/")
-                .build()
-                .create(RetrofitService.class);
-
-        updateProfile();
-        changeView(0);
     }
 
     @Override
@@ -645,38 +632,38 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     }
 
     //TODO intent的Extra传递失败，此处只能拿到-1
-    @Override
-    protected void onNewIntent(Intent intent) {
-        setIntent(intent);
-        int tab = intent.getIntExtra("tab", -1);
-        Log.e("tab",tab+"set");
-        super.onNewIntent(intent);
-    }
+//    @Override
+//    protected void onNewIntent(Intent intent) {
+//        setIntent(intent);
+//        int tab = intent.getIntExtra("tab", -1);
+//        Log.e("tab",tab+"set");
+//        super.onNewIntent(intent);
+//    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // 闹钟跳转
-        Intent intent = getIntent();
-        int tab = intent.getIntExtra("tab", -1);
-        Log.e("tab",tab+"get");
-        if (tab != -1) {
-            changeView(tab);
-
-            new AlertDialog.Builder(mContext)
-                    .setTitle("闹钟时间到")
-                    .setMessage("定时总结，养成习惯")
-                    .setPositiveButton("好的", null)
-                    .setCancelable(false)
-                    .show();
-
-            // 重复设定闹钟
-            Intent newAlarm = new Intent(mContext, RingReceiver.class);
-            newAlarm.setAction("com.kowah.habit.Ring");
-            newAlarm.putExtra("tab", tab);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, tab, newAlarm, PendingIntent.FLAG_UPDATE_CURRENT);
-            AlarmManager alarmManager = (AlarmManager) mContext.getApplicationContext().getSystemService(Service.ALARM_SERVICE);
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), pendingIntent);
-        }
-    }
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        // 闹钟跳转
+//        Intent intent = getIntent();
+//        int tab = intent.getIntExtra("tab", -1);
+//        Log.e("tab",tab+"get");
+//        if (tab != -1) {
+//            changeView(tab);
+//
+//            new AlertDialog.Builder(mContext)
+//                    .setTitle("闹钟时间到")
+//                    .setMessage("定时总结，养成习惯")
+//                    .setPositiveButton("好的", null)
+//                    .setCancelable(false)
+//                    .show();
+//
+//            // 重复设定闹钟
+//            Intent newAlarm = new Intent(mContext, RingReceiver.class);
+//            newAlarm.setAction("com.kowah.habit.Ring");
+//            newAlarm.putExtra("tab", tab);
+//            PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, tab, newAlarm, PendingIntent.FLAG_UPDATE_CURRENT);
+//            AlarmManager alarmManager = (AlarmManager) mContext.getApplicationContext().getSystemService(Service.ALARM_SERVICE);
+//            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), pendingIntent);
+//        }
+//    }
 }

@@ -132,14 +132,14 @@ public class ChatFragment extends Fragment {
                             editor.putString("time1", time);
                             editor.apply();
 
-                            setBroadcastAlarm(hour, minute);
+//                            setBroadcastAlarm(hour, minute);
                             createAlarm("每天总结", hour, minute, -1);
-                            new Handler().postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    showAlarm();
-                                }
-                            }, 300);
+//                            new Handler().postDelayed(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    showAlarm();
+//                                }
+//                            }, 300);
 
                         }
                     });
@@ -193,14 +193,14 @@ public class ChatFragment extends Fragment {
                                     editor.putString("time2", time);
                                     editor.apply();
 
-                                    setBroadcastAlarm(hour, minute);
+//                                    setBroadcastAlarm(hour, minute);
                                     createAlarm("每周总结", hour, minute, selected);
-                                    new Handler().postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            showAlarm();
-                                        }
-                                    }, 300);
+//                                    new Handler().postDelayed(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            showAlarm();
+//                                        }
+//                                    }, 300);
                                 }
                             });
                             weekDialog.show();
