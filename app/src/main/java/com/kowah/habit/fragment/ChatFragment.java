@@ -371,7 +371,9 @@ public class ChatFragment extends Fragment {
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-                holder.profile.setImageBitmap(bitmap); //设置Bitmap为头像
+                if (bitmap != null) {
+                    holder.profile.setImageBitmap(bitmap); //设置Bitmap为头像
+                }
             }
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {

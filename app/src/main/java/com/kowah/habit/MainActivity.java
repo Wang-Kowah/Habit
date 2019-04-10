@@ -1,8 +1,10 @@
 package com.kowah.habit;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,12 +15,15 @@ import android.os.IBinder;
 import android.provider.AlarmClock;
 import android.provider.MediaStore;
 import android.support.annotation.CallSuper;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -210,7 +215,9 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 Bitmap bitmap; //从本地取图片
                 try {
                     bitmap = BitmapFactory.decodeStream(new FileInputStream(file));
-                    profile.setImageBitmap(bitmap); //设置Bitmap为头像
+                    if (bitmap != null) {
+                        profile.setImageBitmap(bitmap); //设置Bitmap为头像
+                    }
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -245,8 +252,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 showPopupWindow();
                 break;
             case R.id.btn_pop_album:
-                Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(i, REQUEST_GALLERY_IMAGE);
+                if (checkPermission()) {
+                    Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(i, REQUEST_GALLERY_IMAGE);
+                }
                 popupWindow.dismiss();
                 break;
             case R.id.btn_pop_camera:
@@ -385,7 +394,9 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                                 } catch (FileNotFoundException e) {
                                     e.printStackTrace();
                                 }
-                                profile.setImageBitmap(bitmap); //设置Bitmap为头像
+                                if (bitmap != null) {
+                                    profile.setImageBitmap(bitmap); //设置Bitmap为头像
+                                }
                                 mLastProfilePath = file.getAbsolutePath();
 
                                 SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -493,20 +504,22 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
     // 调用摄像头
     private void takePhoto() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Ensure that there's a camera activity to handle the intent
-        if (takePictureIntent.resolveActivity(mContext.getPackageManager()) != null) {
-            // Create the File where the photo should go
-            File photo = FileUtils.createImageFile();
-            // Continue only if the File was successfully created
-            if (photo != null) {
-                // api24后需要使用FileProvider
-                mCurrentPhotoPath = photo.getAbsolutePath();
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(mContext, "com.kowah.fileprovider", photo));
+        if (checkPermission()) {
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            // Ensure that there's a camera activity to handle the intent
+            if (takePictureIntent.resolveActivity(mContext.getPackageManager()) != null) {
+                // Create the File where the photo should go
+                File photo = FileUtils.createImageFile();
+                // Continue only if the File was successfully created
+                if (photo != null) {
+                    // api24后需要使用FileProvider
+                    mCurrentPhotoPath = photo.getAbsolutePath();
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(mContext, "com.kowah.fileprovider", photo));
+                }
             }
-        }
 
-        startActivityForResult(takePictureIntent, MainActivity.REQUEST_CAMERA_IMAGE);//跳转界面传回拍照所得数据
+            startActivityForResult(takePictureIntent, MainActivity.REQUEST_CAMERA_IMAGE);//跳转界面传回拍照所得数据
+        }
     }
 
     // 图片裁剪
@@ -670,4 +683,53 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 //            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), pendingIntent);
 //        }
 //    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 666) {
+            for (int permission : grantResults) {
+                if (permission != PackageManager.PERMISSION_GRANTED) {
+                    Toast toast = Toast.makeText(mContext, "请同意应用正常运行所需权限", Toast.LENGTH_SHORT);
+                    toast.setText("请同意应用正常运行所需权限");
+                    toast.show();
+                }
+            }
+
+            // 用户勾选不再提示
+            if (!shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
+                    || !shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    || !shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                try {
+                    Intent intent = new Intent();
+                    intent.setAction(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.parse("package:" + getPackageName()));
+                    startActivity(intent);
+
+                    Toast toast = Toast.makeText(mContext, "您禁止了某些权限并勾选了不再提醒，未获得权限前某些功能可能无法正常运行", Toast.LENGTH_LONG);
+                    toast.setText("您禁止了某些权限并勾选了不再提醒，未获得权限前某些功能可能无法正常运行");
+                    toast.show();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    // 确认权限
+    private boolean checkPermission() {
+        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(mContext, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.CAMERA
+            }, 666);
+
+            return false;
+        }
+        return true;
+    }
+
 }
