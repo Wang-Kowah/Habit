@@ -123,13 +123,17 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 editor.putString("alertTime", "7:50");
                 editor.apply();
 
-                createAlarm("每天总结", 22, 30, -1);
-                createAlarm("早上复习", 7, 50, -1);
-                createAlarm("每周总结", 18, 50, 5);
+                createAlarm("【习惯APP】每天总结", 22, 30, -1);
+                createAlarm("【习惯APP】早上复习", 7, 50, -1);
+                createAlarm("【习惯APP】每周总结", 18, 50, 5);
 
                 new AlertDialog.Builder(mContext)
                         .setTitle("已为您设置三个默认闹钟")
-                        .setMessage("闹钟用途为提醒您定时进行总结，可点击左下角自行更改提醒时间\n\n每天总结  每天22:30\n早上复习  每天07:50\n每周总结  周六18:50")
+                        .setMessage("每天总结  每天22:30\n" +
+                                "早上复习  每天07:50\n" +
+                                "每周总结  周六18:50\n\n" +
+                                "可在应用中点击左下角更改闹钟时间\n" +
+                                "如您不需要闹钟，可去系统闹铃里手动关闭")
                         .setPositiveButton("我知道了", null)
                         .setCancelable(false)
                         .show();

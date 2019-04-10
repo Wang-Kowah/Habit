@@ -15,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.codbking.widget.DatePickDialog;
 import com.codbking.widget.OnSureLisener;
@@ -66,20 +65,20 @@ public class ReviewFragment extends Fragment {
                         int hour = date.getHours(), minute = date.getMinutes();
                         String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
                         alertTime.setText(time);
-                        Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
-                        toast.setText("闹钟设置成功");
-                        if (!time.equals(sharedPreferences.getString("alertTime", "07:50"))) {
-                            toast.setText("闹钟设置成功，请手动删除旧闹钟");
-                        }
-                        toast.show();
+//                        Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
+//                        toast.setText("闹钟设置成功");
+//                        if (!time.equals(sharedPreferences.getString("alertTime", "07:50"))) {
+//                            toast.setText("闹钟设置成功，请手动删除旧闹钟");
+//                        }
+//                        toast.show();
 
                         editor.putString("alertTime", time);
                         editor.apply();
 
-                        createAlarm("早上复习", hour, minute);
+                        createAlarm("【习惯APP】早上复习", hour, minute);
                         new AlertDialog.Builder(getContext())
                                 .setTitle("已为您设置新的闹钟")
-                                .setMessage("时间为：每天" + time + "\n\n别忘了手动删除旧闹钟喔")
+                                .setMessage("可去系统闹铃里手动关闭旧的闹钟")
                                 .setPositiveButton("我知道了", null)
                                 .setCancelable(false)
                                 .show();

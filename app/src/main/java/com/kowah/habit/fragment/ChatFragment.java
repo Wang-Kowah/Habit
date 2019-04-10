@@ -122,18 +122,24 @@ public class ChatFragment extends Fragment {
 
                             String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
                             timeButton.setText(time);
-                            Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
-                            toast.setText("闹钟设置成功");
-                            if (!time.equals(sharedPreferences.getString("time1", "22:30"))) {
-                                toast.setText("闹钟设置成功，请手动删除旧闹钟");
-                            }
-                            toast.show();
+//                            Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
+//                            toast.setText("闹钟设置成功");
+//                            if (!time.equals(sharedPreferences.getString("time1", "22:30"))) {
+//                                toast.setText("闹钟设置成功，请手动删除旧闹钟");
+//                            }
+//                            toast.show();
 
                             editor.putString("time1", time);
                             editor.apply();
 
+                            createAlarm("【习惯APP】每天总结", hour, minute, -1);
+                            new android.support.v7.app.AlertDialog.Builder(getContext())
+                                    .setTitle("已为您设置新的闹钟")
+                                    .setMessage("可去系统闹铃里手动关闭旧的闹钟")
+                                    .setPositiveButton("我知道了", null)
+                                    .setCancelable(false)
+                                    .show();
 //                            setBroadcastAlarm(hour, minute);
-                            createAlarm("每天总结", hour, minute, -1);
 //                            new Handler().postDelayed(new Runnable() {
 //                                @Override
 //                                public void run() {
@@ -182,19 +188,25 @@ public class ChatFragment extends Fragment {
                                     String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
                                     timeButton.setText(time);
                                     dateTextView.setText(daySelected);
-                                    Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
-                                    toast.setText("闹钟设置成功");
-                                    if (!time.equals(sharedPreferences.getString("time2", "18:50")) || !daySelected.equals(sharedPreferences.getString("dayInWeek", "六"))) {
-                                        toast.setText("闹钟设置成功，请手动删除旧闹钟");
-                                    }
-                                    toast.show();
+//                                    Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
+//                                    toast.setText("闹钟设置成功");
+//                                    if (!time.equals(sharedPreferences.getString("time2", "18:50")) || !daySelected.equals(sharedPreferences.getString("dayInWeek", "六"))) {
+//                                        toast.setText("闹钟设置成功，请手动删除旧闹钟");
+//                                    }
+//                                    toast.show();
 
                                     editor.putString("dayInWeek", daySelected);
                                     editor.putString("time2", time);
                                     editor.apply();
 
+                                    createAlarm("【习惯APP】每周总结", hour, minute, selected);
+                                    new android.support.v7.app.AlertDialog.Builder(getContext())
+                                            .setTitle("已为您设置新的闹钟")
+                                            .setMessage("可去系统闹铃里手动关闭旧的闹钟")
+                                            .setPositiveButton("我知道了", null)
+                                            .setCancelable(false)
+                                            .show();
 //                                    setBroadcastAlarm(hour, minute);
-                                    createAlarm("每周总结", hour, minute, selected);
 //                                    new Handler().postDelayed(new Runnable() {
 //                                        @Override
 //                                        public void run() {
