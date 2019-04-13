@@ -11,12 +11,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.AlarmClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,6 +26,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -242,6 +245,26 @@ public class ChatFragment extends Fragment {
         // 动态设置行数来避免EditText在多行状态下对ImeOptions的强制设置导致回车键样式修改失败
         editText.setMaxLines(5);
         editText.setHorizontallyScrolling(false);
+        editText.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            // 当键盘弹出隐藏的时候会 调用此方法。
+            @Override
+            public void onGlobalLayout() {
+                Rect r = new Rect();
+                // 获取当前界面可视部分
+                FragmentActivity fragmentActivity = getActivity();
+                if (fragmentActivity != null) {
+                    fragmentActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
+                    // 获取屏幕的高度
+                    int screenHeight = fragmentActivity.getWindow().getDecorView().getRootView().getHeight();
+                    // 此处就是用来获取键盘的高度的， 在键盘没有弹出的时候 此高度为0 键盘弹出的时候为一个正数
+                    int heightDifference = screenHeight - r.bottom;
+                    if (heightDifference != 0) {
+                        // 点击EditText会跳回最后一行
+                        recyclerView.scrollToPosition(0);
+                    }
+                }
+            }
+        });
         editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 
             @Override
