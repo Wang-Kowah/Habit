@@ -189,6 +189,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
             mFragmentManager = getSupportFragmentManager();
             mViewPager = findViewById(R.id.viewpager);
+            mViewPager.setOffscreenPageLimit(2);
             mViewPager.setAdapter(new MyFragmentStatePagerAdapter(mFragmentManager));
             mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                 @Override

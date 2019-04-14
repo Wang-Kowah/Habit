@@ -260,7 +260,12 @@ public class ChatFragment extends Fragment {
                     int heightDifference = screenHeight - r.bottom;
                     if (heightDifference != 0) {
                         // 点击EditText会跳回最后一行
-                        recyclerView.scrollToPosition(0);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                recyclerView.scrollToPosition(0);
+                            }
+                        },100);
                     }
                 }
             }
