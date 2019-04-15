@@ -35,15 +35,16 @@ public class StartActivity extends AppCompatActivity {
         // 首次安装时打开，否则只在每周一出现一次
         if (mLastOpenApp == -1 || (DateUtils.isMonday(now) && mLastOpenApp < DateUtils.getDayBeginTimestamp(now, 0))) {
 
+            final CountDownTimer countDownTimer = new CountDownTimerUtils(skipButton, 5000, 1000);
+            countDownTimer.start();
+
             skipButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    countDownTimer.cancel();
                     getHome();
                 }
             });
-
-            CountDownTimer countDownTimer = new CountDownTimerUtils(skipButton, 5000, 1000);
-            countDownTimer.start();
 
             editor.putLong("mLastOpenApp", now);
             editor.apply();

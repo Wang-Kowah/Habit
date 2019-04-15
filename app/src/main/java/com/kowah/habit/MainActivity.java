@@ -189,7 +189,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
             mFragmentManager = getSupportFragmentManager();
             mViewPager = findViewById(R.id.viewpager);
-            mViewPager.setOffscreenPageLimit(2);
+//            mViewPager.setOffscreenPageLimit(2);
             mViewPager.setAdapter(new MyFragmentStatePagerAdapter(mFragmentManager));
             mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                 @Override
@@ -306,6 +306,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 mCurrentPhotoPath = uri2path(uriTempFile);
                 uploadProfile(mCurrentPhotoPath);
 
+                //TODO 失效
                 // 更新聊天窗口的头像
                 FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
                 fragmentTransaction.detach(chatFragment);
