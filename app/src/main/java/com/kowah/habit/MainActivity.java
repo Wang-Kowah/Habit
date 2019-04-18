@@ -224,8 +224,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 }
             }
 
+            MyApplication application = (MyApplication) getApplication();
+            String domain = application.getDomain();
             retrofitService = new Retrofit.Builder()
-                    .baseUrl("http://119.29.77.201/habit/")
+                    .baseUrl(domain)
                     .build()
                     .create(RetrofitService.class);
 

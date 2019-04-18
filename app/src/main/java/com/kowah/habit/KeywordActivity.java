@@ -94,8 +94,10 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
         buttonList.add(buttonTwo);
         buttonList.add(buttonThree);
 
+        MyApplication application = (MyApplication) getApplication();
+        String domain = application.getDomain();
         retrofitService = new Retrofit.Builder()
-                .baseUrl("http://119.29.77.201/habit/")
+                .baseUrl(domain)
                 .build()
                 .create(RetrofitService.class);
 

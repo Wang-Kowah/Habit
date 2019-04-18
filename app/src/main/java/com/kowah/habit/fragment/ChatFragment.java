@@ -40,6 +40,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.codbking.widget.DatePickDialog;
 import com.codbking.widget.OnSureLisener;
 import com.codbking.widget.bean.DateType;
+import com.kowah.habit.MyApplication;
 import com.kowah.habit.R;
 import com.kowah.habit.RingReceiver;
 import com.kowah.habit.service.RetrofitService;
@@ -100,9 +101,11 @@ public class ChatFragment extends Fragment {
 
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
         final TextView timeButton = view.findViewById(R.id.timeButton);
+        final EditText editText = view.findViewById(R.id.input_node);
 
         if (getArguments() != null && getArguments().getInt("tab", -1) == 0) {
             view.findViewById(R.id.week).setVisibility(View.GONE);
+            editText.setHint("   随时记录自己的想法或总结");
 
             timeButton.setText(sharedPreferences.getString("time1", "22:30"));
             timeButton.setOnClickListener(new View.OnClickListener() {
@@ -236,12 +239,13 @@ public class ChatFragment extends Fragment {
         }
 
         uid = sharedPreferences.getInt("uid", -1);
+        MyApplication application = (MyApplication) getActivity().getApplication();
+        String domain = application.getDomain();
         retrofitService = new Retrofit.Builder()
-                .baseUrl("http://119.29.77.201/habit/")
+                .baseUrl(domain)
                 .build()
                 .create(RetrofitService.class);
 
-        final EditText editText = view.findViewById(R.id.input_node);
         // 动态设置行数来避免EditText在多行状态下对ImeOptions的强制设置导致回车键样式修改失败
         editText.setMaxLines(5);
         editText.setHorizontallyScrolling(false);
@@ -265,7 +269,7 @@ public class ChatFragment extends Fragment {
                             public void run() {
                                 recyclerView.scrollToPosition(0);
                             }
-                        },100);
+                        }, 100);
                     }
                 }
             }

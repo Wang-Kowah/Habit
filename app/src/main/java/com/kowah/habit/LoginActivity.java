@@ -71,8 +71,10 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
 
         countDownTimer = new CountDownTimerUtils(getCode, 60000, 1000);
 
+        MyApplication application = (MyApplication) getApplication();
+        String domain = application.getDomain();
         retrofitService = new Retrofit.Builder()
-                .baseUrl("http://119.29.77.201/habit/")
+                .baseUrl(domain)
                 .build()
                 .create(RetrofitService.class);
 

@@ -80,7 +80,7 @@
             android:layout_marginBottom="5dp"
             android:background="@drawable/round_edittext"
             android:gravity="start|top"
-            android:hint=" 建议使用语音输入法，打字快"
+            android:hint="                      每周总结"
             android:imeOptions="actionSend"
             android:inputType="text"
             android:maxLines="5"

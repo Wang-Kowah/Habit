@@ -1,13 +1,8 @@
 package com.kowah.habit.service;
 
-import java.io.IOException;
-
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
@@ -57,33 +52,4 @@ public interface RetrofitService {
     @GET("user/keyword")
     Call<ResponseBody> keyword(@Query("uid") int uid, @Query("type") int type, @Query("pageNum") int pageNum, @Query("pageSize") int pageSize);
 
-}
-
-class Test {
-    public static void main(String[] args) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://119.29.77.201/habit/")
-                .build();
-
-        RetrofitService retrofitService = retrofit.create(RetrofitService.class);
-        Call<ResponseBody> call = retrofitService.info(2);
-
-        // 发送网络请求(异步)
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    String json = response.body().string();
-                    System.out.println(json);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                System.out.println("fail, " + t.getMessage());
-            }
-        });
-    }
 }
