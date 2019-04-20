@@ -43,10 +43,11 @@ public class ReviewFragment extends Fragment {
         final SharedPreferences.Editor editor = sharedPreferences.edit();
 
         View view = inflater.inflate(R.layout.fragment_review, container, false);
-        final TextView alertTime = view.findViewById(R.id.alertTime);
+        final TextView reviewTime = view.findViewById(R.id.reviewTime);
+        final View reviewBtn = view.findViewById(R.id.reviewBtn);
 
-        alertTime.setText(sharedPreferences.getString("alertTime", "07:50"));
-        alertTime.setOnClickListener(new View.OnClickListener() {
+        reviewTime.setText(sharedPreferences.getString("alertTime", "07:50"));
+        reviewBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 DatePickDialog dialog = new DatePickDialog(getContext());
@@ -64,7 +65,7 @@ public class ReviewFragment extends Fragment {
                     public void onSure(Date date) {
                         int hour = date.getHours(), minute = date.getMinutes();
                         String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
-                        alertTime.setText(time);
+                        reviewTime.setText(time);
 //                        Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
 //                        toast.setText("闹钟设置成功");
 //                        if (!time.equals(sharedPreferences.getString("alertTime", "07:50"))) {
