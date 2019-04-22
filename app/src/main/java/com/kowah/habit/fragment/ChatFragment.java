@@ -281,7 +281,7 @@ public class ChatFragment extends Fragment {
                 if (actionId == EditorInfo.IME_ACTION_SEND || actionId == EditorInfo.IME_ACTION_DONE
                         || (event != null && KeyEvent.KEYCODE_ENTER == event.getKeyCode() && KeyEvent.ACTION_DOWN == event.getAction())) {
                     final String input = v.getText().toString();
-                    if (!input.equals("")) {
+                    if (!input.trim().equals("")) {
                         v.setText("");
                         // 手动更新消息列表
                         msgList.addFirst(input);

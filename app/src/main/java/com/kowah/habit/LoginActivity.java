@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
+import com.githang.statusbar.StatusBarCompat;
 import com.kowah.habit.service.RetrofitService;
 import com.xiasuhuei321.loadingdialog.view.LoadingDialog;
 
@@ -51,6 +52,8 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
         setContentView(R.layout.activity_login);
+        //设置状态栏的颜色
+        StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary));
 
         // 动态申请权限
         ActivityCompat.requestPermissions(this, new String[]{

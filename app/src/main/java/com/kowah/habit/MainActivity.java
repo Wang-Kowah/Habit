@@ -42,6 +42,7 @@ import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
+import com.githang.statusbar.StatusBarCompat;
 import com.kowah.habit.fragment.ChatFragment;
 import com.kowah.habit.fragment.ReviewFragment;
 import com.kowah.habit.service.RetrofitService;
@@ -113,6 +114,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
+        //设置状态栏的颜色
+        StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary));
         mContext = MainActivity.this;
 
         // 未登录时跳转

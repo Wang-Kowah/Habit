@@ -14,6 +14,7 @@ import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.TextView;
 
+import com.githang.statusbar.StatusBarCompat;
 import com.kowah.habit.utils.DateUtils;
 
 public class StartActivity extends AppCompatActivity {
@@ -24,6 +25,8 @@ public class StartActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
         setContentView(R.layout.activity_start);
+        //设置状态栏的颜色
+        StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary));
 
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();

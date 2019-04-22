@@ -8,6 +8,8 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import com.githang.statusbar.StatusBarCompat;
+
 public class ProtocolActivity extends AppCompatActivity {
 
     @Override
@@ -16,6 +18,8 @@ public class ProtocolActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
         setContentView(R.layout.activity_protocol);
+        //设置状态栏的颜色
+        StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary));
 
         final View imageView = findViewById(R.id.returnbutton2);
         imageView.setOnClickListener(new View.OnClickListener() {

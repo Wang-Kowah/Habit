@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.githang.statusbar.StatusBarCompat;
 import com.kowah.habit.service.RetrofitService;
 import com.kowah.habit.utils.DateUtils;
 
@@ -61,6 +62,8 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
         setContentView(R.layout.activity_keyword);
+        //设置状态栏的颜色
+        StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary));
 
         sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         uid = sharedPreferences.getInt("uid", -1);
