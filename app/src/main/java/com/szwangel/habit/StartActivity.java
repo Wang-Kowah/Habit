@@ -1,4 +1,4 @@
-package com.kowah.habit;
+package com.szwangel.habit;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,7 +15,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.githang.statusbar.StatusBarCompat;
-import com.kowah.habit.utils.DateUtils;
+import com.szwangel.habit.utils.DateUtils;
 
 public class StartActivity extends AppCompatActivity {
 

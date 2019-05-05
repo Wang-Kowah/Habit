@@ -1,4 +1,4 @@
-package com.kowah.habit.fragment;
+package com.szwangel.habit.fragment;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -19,8 +19,8 @@ import android.widget.TextView;
 import com.codbking.widget.DatePickDialog;
 import com.codbking.widget.OnSureLisener;
 import com.codbking.widget.bean.DateType;
-import com.kowah.habit.R;
-import com.kowah.habit.RingReceiver;
+import com.szwangel.habit.R;
+import com.szwangel.habit.RingReceiver;
 
 import java.util.ArrayList;
 import java.util.Calendar;

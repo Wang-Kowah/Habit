@@ -1,4 +1,4 @@
-package com.kowah.habit.fragment;
+package com.szwangel.habit.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
@@ -40,11 +40,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.codbking.widget.DatePickDialog;
 import com.codbking.widget.OnSureLisener;
 import com.codbking.widget.bean.DateType;
-import com.kowah.habit.MyApplication;
-import com.kowah.habit.R;
-import com.kowah.habit.RingReceiver;
-import com.kowah.habit.service.RetrofitService;
-import com.kowah.habit.utils.DateUtils;
+import com.szwangel.habit.MyApplication;
+import com.szwangel.habit.R;
+import com.szwangel.habit.RingReceiver;
+import com.szwangel.habit.service.RetrofitService;
+import com.szwangel.habit.utils.DateUtils;
 
 import java.io.File;
 import java.io.FileInputStream;

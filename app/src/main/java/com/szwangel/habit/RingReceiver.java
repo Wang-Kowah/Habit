@@ -1,4 +1,4 @@
-package com.kowah.habit;
+package com.szwangel.habit;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

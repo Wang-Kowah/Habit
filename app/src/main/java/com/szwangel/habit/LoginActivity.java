@@ -1,4 +1,4 @@
-package com.kowah.habit;
+package com.szwangel.habit;
 
 import android.Manifest;
 import android.content.Context;
@@ -23,7 +23,7 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
 import com.githang.statusbar.StatusBarCompat;
-import com.kowah.habit.service.RetrofitService;
+import com.szwangel.habit.service.RetrofitService;
 import com.xiasuhuei321.loadingdialog.view.LoadingDialog;
 
 import java.io.IOException;

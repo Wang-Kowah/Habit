@@ -1,4 +1,4 @@
-package com.kowah.habit;
+package com.szwangel.habit;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

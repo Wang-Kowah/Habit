@@ -1,4 +1,4 @@
-package com.kowah.habit.service;
+package com.szwangel.habit.service;
 
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;

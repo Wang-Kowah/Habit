@@ -1,4 +1,4 @@
-package com.kowah.habit.utils;
+package com.szwangel.habit.utils;
 
 import android.content.Context;
 import android.os.Environment;

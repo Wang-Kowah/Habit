@@ -1,4 +1,4 @@
-package com.kowah.habit.utils;
+package com.szwangel.habit.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

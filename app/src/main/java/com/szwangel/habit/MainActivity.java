@@ -1,4 +1,4 @@
-package com.kowah.habit;
+package com.szwangel.habit;
 
 import android.Manifest;
 import android.content.Context;
@@ -43,10 +43,10 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
 import com.githang.statusbar.StatusBarCompat;
-import com.kowah.habit.fragment.ChatFragment;
-import com.kowah.habit.fragment.ReviewFragment;
-import com.kowah.habit.service.RetrofitService;
-import com.kowah.habit.utils.FileUtils;
+import com.szwangel.habit.fragment.ChatFragment;
+import com.szwangel.habit.fragment.ReviewFragment;
+import com.szwangel.habit.service.RetrofitService;
+import com.szwangel.habit.utils.FileUtils;
 import com.xiasuhuei321.loadingdialog.view.LoadingDialog;
 
 import java.io.File;
