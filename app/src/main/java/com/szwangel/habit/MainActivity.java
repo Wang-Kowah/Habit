@@ -26,7 +26,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -99,6 +98,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     PopupWindow popupWindow;
 
     View keyword;
+    View search;
     ImageView profile;
 
     SharedPreferences sharedPreferences;
@@ -126,92 +126,29 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             finish();
         } else {
             // 首次打开设置三个默认闹钟
-            if (sharedPreferences.getString("alertTime", "").equals("")) {
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("alertTime", "7:50");
-                editor.apply();
+//            if (sharedPreferences.getString("alertTime", "").equals("")) {
+//                SharedPreferences.Editor editor = sharedPreferences.edit();
+//                editor.putString("alertTime", "7:50");
+//                editor.apply();
+//
+//                createAlarm("【习惯APP】每天总结", 22, 30, -1);
+//                createAlarm("【习惯APP】早上复习", 7, 50, -1);
+//                createAlarm("【习惯APP】每周总结", 18, 50, 5);
+//
+//                new AlertDialog.Builder(mContext)
+//                        .setTitle("已为您设置三个默认闹钟")
+//                        .setMessage("每天总结  每天22:30\n" +
+//                                "早上复习  每天07:50\n" +
+//                                "每周总结  周六18:50\n\n" +
+//                                "可在应用中点击左下角更改闹钟时间\n" +
+//                                "如您不需要闹钟，可去系统闹铃里手动关闭")
+//                        .setPositiveButton("我知道了", null)
+//                        .setCancelable(false)
+//                        .show();
+//            }
 
-                createAlarm("【习惯APP】每天总结", 22, 30, -1);
-                createAlarm("【习惯APP】早上复习", 7, 50, -1);
-                createAlarm("【习惯APP】每周总结", 18, 50, 5);
-
-                new AlertDialog.Builder(mContext)
-                        .setTitle("已为您设置三个默认闹钟")
-                        .setMessage("每天总结  每天22:30\n" +
-                                "早上复习  每天07:50\n" +
-                                "每周总结  周六18:50\n\n" +
-                                "可在应用中点击左下角更改闹钟时间\n" +
-                                "如您不需要闹钟，可去系统闹铃里手动关闭")
-                        .setPositiveButton("我知道了", null)
-                        .setCancelable(false)
-                        .show();
-            }
-
-            buttonOne = findViewById(R.id.btn_one);
-            buttonTwo = findViewById(R.id.btn_two);
-            buttonThree = findViewById(R.id.btn_three);
-            profile = findViewById(R.id.user);
-            keyword = findViewById(R.id.keywordButton);
-
-            buttonOne.setOnClickListener(this);
-            buttonTwo.setOnClickListener(this);
-            buttonThree.setOnClickListener(this);
-            profile.setOnClickListener(this);
-            keyword.setOnClickListener(this);
-            keyword.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        keyword.setBackground(getDrawable(R.color.colorText));
-                        keyword.setAlpha(0.3F);
-                    }
-                    if (event.getAction() == MotionEvent.ACTION_UP) {
-                        keyword.setBackground(getDrawable(R.color.colorPrimary));
-                        keyword.setAlpha(1);
-                    }
-                    return false;
-                }
-            });
-
-            buttonList = new ArrayList<>();
-            buttonList.add(buttonOne);
-            buttonList.add(buttonTwo);
-            buttonList.add(buttonThree);
-
-            Bundle bundle = new Bundle();
-            bundle.putInt("tab", 0);
-            chatFragment = new ChatFragment();
-            chatFragment.setArguments(bundle);
-            reviewFragment = new ReviewFragment();
-            thirdFragment = new ChatFragment();
-
-            fragmentList = new ArrayList<>();
-            fragmentList.add(chatFragment);
-            fragmentList.add(reviewFragment);
-            fragmentList.add(thirdFragment);
-
-            mFragmentManager = getSupportFragmentManager();
-            mViewPager = findViewById(R.id.viewpager);
-//            mViewPager.setOffscreenPageLimit(2);
-            mViewPager.setAdapter(new MyFragmentStatePagerAdapter(mFragmentManager));
-            mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-                @Override
-                public void onPageScrolled(int i, float v, int i1) {
-                }
-
-                @Override
-                public void onPageScrollStateChanged(int i) {
-                }
-
-                @Override
-                public void onPageSelected(int i) {
-                    // 更新按钮颜色
-                    buttonOne.setTextColor(getColor(R.color.colorText));
-                    buttonTwo.setTextColor(getColor(R.color.colorText));
-                    buttonThree.setTextColor(getColor(R.color.colorText));
-                    buttonList.get(i).setTextColor(getColor(R.color.colorPrimary));
-                }
-            });
+            initView();
+            initListener();
 
             mLastProfilePath = sharedPreferences.getString("mLastProfilePath", "");
             File file = new File(mLastProfilePath);
@@ -272,6 +209,9 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 //                navigateTo(LoginActivity.class);
                 popupWindow.dismiss();
                 break;
+            case R.id.searchButton:
+                navigateTo(SearchActivity.class);
+                break;
             case R.id.timeButton:
                 break;
             default:
@@ -330,6 +270,92 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             }
         }
         return super.dispatchTouchEvent(event);
+    }
+
+    private void initView() {
+        buttonOne = findViewById(R.id.btn_one);
+        buttonTwo = findViewById(R.id.btn_two);
+        buttonThree = findViewById(R.id.btn_three);
+        profile = findViewById(R.id.user);
+        keyword = findViewById(R.id.keywordButton);
+        search = findViewById(R.id.searchButton);
+
+        buttonList = new ArrayList<>();
+        buttonList.add(buttonOne);
+        buttonList.add(buttonTwo);
+        buttonList.add(buttonThree);
+
+        Bundle bundle = new Bundle();
+        bundle.putInt("tab", 0);
+        chatFragment = new ChatFragment();
+        chatFragment.setArguments(bundle);
+        reviewFragment = new ReviewFragment();
+        thirdFragment = new ChatFragment();
+
+        fragmentList = new ArrayList<>();
+        fragmentList.add(chatFragment);
+        fragmentList.add(reviewFragment);
+        fragmentList.add(thirdFragment);
+
+        mFragmentManager = getSupportFragmentManager();
+        mViewPager = findViewById(R.id.viewpager);
+//        mViewPager.setOffscreenPageLimit(2);
+        mViewPager.setAdapter(new MyFragmentStatePagerAdapter(mFragmentManager));
+        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int i, float v, int i1) {
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int i) {
+            }
+
+            @Override
+            public void onPageSelected(int i) {
+                // 更新按钮颜色
+                buttonOne.setTextColor(getColor(R.color.colorText));
+                buttonTwo.setTextColor(getColor(R.color.colorText));
+                buttonThree.setTextColor(getColor(R.color.colorText));
+                buttonList.get(i).setTextColor(getColor(R.color.colorPrimary));
+            }
+        });
+    }
+
+    private void initListener() {
+        buttonOne.setOnClickListener(this);
+        buttonTwo.setOnClickListener(this);
+        buttonThree.setOnClickListener(this);
+        profile.setOnClickListener(this);
+        keyword.setOnClickListener(this);
+        keyword.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    keyword.setBackground(getDrawable(R.color.colorText));
+                    keyword.setAlpha(0.3F);
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    keyword.setBackground(getDrawable(R.color.colorPrimary));
+                    keyword.setAlpha(1);
+                }
+                return false;
+            }
+        });
+        search.setOnClickListener(this);
+        search.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    search.setBackground(getDrawable(R.color.colorText));
+                    search.setAlpha(0.3F);
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    search.setBackground(getDrawable(R.color.colorPrimary));
+                    search.setAlpha(1);
+                }
+                return false;
+            }
+        });
     }
 
     // 自定义ViewPager适配器

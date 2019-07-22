@@ -1,5 +1,7 @@
 package com.szwangel.habit.service;
 
+import java.math.BigDecimal;
+
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -34,7 +36,7 @@ public interface RetrofitService {
 
     @FormUrlEncoded
     @POST("user/sendNote")
-    Call<ResponseBody> sendNote(@Field("uid") int uid, @Field("type") int type, @Field("msg") String msg);
+    Call<ResponseBody> sendNote(@Field("uid") int uid, @Field("type") int type, @Field("msg") String msg, @Field("lat") BigDecimal lat, @Field("lng") BigDecimal lng);
 
     @GET("user/noteList")
     Call<ResponseBody> noteList(@Query("uid") int uid, @Query("type") int type, @Query("pageNum") int pageNum, @Query("pageSize") int pageSize);
@@ -51,5 +53,16 @@ public interface RetrofitService {
 
     @GET("user/keyword")
     Call<ResponseBody> keyword(@Query("uid") int uid, @Query("type") int type, @Query("pageNum") int pageNum, @Query("pageSize") int pageSize);
+
+    @FormUrlEncoded
+    @POST("user/search")
+    Call<ResponseBody> search(@Field("uid") int uid, @Field("key") String key, @Field("pageNum") int pageNum, @Field("pageSize") int pageSize);
+
+    @Multipart
+    @POST("user/sendPic")
+    Call<ResponseBody> sendPic(@Query("uid") int uid, @Query("type") int type, @Query("lat") BigDecimal lat, @Query("lng") BigDecimal lng, @Part MultipartBody.Part pic);
+
+    @GET("user/pic")
+    Call<ResponseBody> pic(@Query("picName") String picName);
 
 }

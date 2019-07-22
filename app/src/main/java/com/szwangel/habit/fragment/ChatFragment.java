@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -84,6 +85,9 @@ public class ChatFragment extends Fragment {
     int pageNum;
     int uid;
     int sentMsgNum;
+    BigDecimal lat;
+    BigDecimal lng;
+
 
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
@@ -293,10 +297,10 @@ public class ChatFragment extends Fragment {
                         Call<ResponseBody> call = null;
                         switch (currentTab) {
                             case 0:
-                                call = retrofitService.sendNote(uid, 0, input);
+                                call = retrofitService.sendNote(uid, 0, input, lat, lng);
                                 break;
                             case 2:
-                                call = retrofitService.sendNote(uid, 1, input);
+                                call = retrofitService.sendNote(uid, 1, input, lat, lng);
                                 break;
                             default:
                                 break;
