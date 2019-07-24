@@ -15,7 +15,7 @@ import android.text.TextUtils;
 public class LocationUtils {
 
     private static final long REFRESH_TIME = 5000L;
-    private static final float METER_POSITION = 0.0f;
+    private static final float METER_POSITION = 0.0F;
     private static ILocationListener mLocationListener;
     private static LocationListener listener = new MyLocationListener();
 
@@ -106,14 +106,6 @@ public class LocationUtils {
      * 定位监听
      */
     public static void addLocationListener(Context context, String provider, ILocationListener locationListener) {
-
-        addLocationListener(context, provider, REFRESH_TIME, METER_POSITION, locationListener);
-    }
-
-    /**
-     * 定位监听
-     */
-    public static void addLocationListener(Context context, String provider, long time, float meter, ILocationListener locationListener) {
         if (locationListener != null) {
             mLocationListener = locationListener;
         }
@@ -125,7 +117,7 @@ public class LocationUtils {
                 && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        manager.requestLocationUpdates(provider, time, meter, listener);
+        manager.requestLocationUpdates(provider, REFRESH_TIME, METER_POSITION, listener);
     }
 
     /**

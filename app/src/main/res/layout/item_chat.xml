@@ -30,6 +30,7 @@
         <com.daasuu.bl.BubbleLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="45dp"
             android:padding="8dp"
             app:bl_arrowDirection="right"
             app:bl_arrowHeight="8dp"
@@ -45,10 +46,16 @@
                 android:layout_height="wrap_content"
                 android:gravity="start"
                 android:maxWidth="210dp"
-                android:text="周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日周日"
                 android:textColor="@color/colorText"
                 android:textIsSelectable="true"
+                android:visibility="gone"
                 android:textSize="17sp" />
+
+            <ImageView
+                android:id="@+id/pic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"/>
 
         </com.daasuu.bl.BubbleLayout>
 

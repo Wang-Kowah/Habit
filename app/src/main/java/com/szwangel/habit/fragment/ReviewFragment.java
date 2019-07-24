@@ -2,7 +2,6 @@ package com.szwangel.habit.fragment;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -10,7 +9,6 @@ import android.provider.AlarmClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +35,7 @@ public class ReviewFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        alarmManager = (AlarmManager) getActivity().getApplicationContext().getSystemService(Service.ALARM_SERVICE);
+//        alarmManager = (AlarmManager) getActivity().getApplicationContext().getSystemService(Service.ALARM_SERVICE);
 
         final SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_data", MODE_PRIVATE);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -76,11 +74,11 @@ public class ReviewFragment extends Fragment {
                         editor.putString("alertTime", time);
                         editor.apply();
 
-                        createAlarm("【习惯APP】早上复习", hour, minute);
-                        new AlertDialog.Builder(getContext())
-                                .setTitle("已为您设置新的闹钟")
-                                .setMessage("可去系统闹铃里手动关闭旧的闹钟")
-                                .setPositiveButton("我知道了", null)
+//                        createAlarm("【习惯APP】早上复习", hour, minute);
+                        new android.support.v7.app.AlertDialog.Builder(getContext())
+                                .setTitle("温馨提示")
+                                .setMessage("闹铃设置-早上复习，如有需要您可自行设置系统闹铃，建议闹铃名为：【习惯】早上复习")
+                                .setPositiveButton("确认", null)
                                 .setCancelable(false)
                                 .show();
 //                        setBroadcastAlarm(hour, minute);

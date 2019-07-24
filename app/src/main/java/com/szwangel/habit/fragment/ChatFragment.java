@@ -1,27 +1,37 @@
 package com.szwangel.habit.fragment;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Rect;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.AlarmClock;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,11 +42,14 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.bumptech.glide.Glide;
 import com.codbking.widget.DatePickDialog;
 import com.codbking.widget.OnSureLisener;
 import com.codbking.widget.bean.DateType;
@@ -45,10 +58,11 @@ import com.szwangel.habit.R;
 import com.szwangel.habit.RingReceiver;
 import com.szwangel.habit.service.RetrofitService;
 import com.szwangel.habit.utils.DateUtils;
+import com.szwangel.habit.utils.FileUtils;
+import com.szwangel.habit.utils.LocationUtils;
+import com.xiasuhuei321.loadingdialog.view.LoadingDialog;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -58,15 +72,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
 
 public class ChatFragment extends Fragment {
+
+    private static final int REQUEST_GALLERY_IMAGE = 10;// 图库选取图片标识请求码
+    private static final int REQUEST_CAMERA_IMAGE = 11;// 拍照标识请求码
 
     SharedPreferences sharedPreferences;
     RetrofitService retrofitService;
@@ -74,6 +95,7 @@ public class ChatFragment extends Fragment {
     MsgAdapter adapter;
     RecyclerView recyclerView;
     SwipeRefreshLayout swipeRefreshLayout;
+    PopupWindow popupWindow;
 
     LinkedList<String> msgList;
     LinkedList<Long> dateList;
@@ -85,6 +107,9 @@ public class ChatFragment extends Fragment {
     int pageNum;
     int uid;
     int sentMsgNum;
+    String picPath;
+
+    public boolean permissionGranted;
     BigDecimal lat;
     BigDecimal lng;
 
@@ -93,12 +118,14 @@ public class ChatFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, final Bundle savedInstanceState) {
+        initPermission();
+
         pageNum = 1;
         sentMsgNum = 0;
         msgList = new LinkedList<>();
         dateList = new LinkedList<>();
 
-        alarmManager = (AlarmManager) getActivity().getApplicationContext().getSystemService(Service.ALARM_SERVICE);
+//        alarmManager = (AlarmManager) getActivity().getApplicationContext().getSystemService(Service.ALARM_SERVICE);
 
         sharedPreferences = getActivity().getSharedPreferences("user_data", MODE_PRIVATE);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -106,6 +133,15 @@ public class ChatFragment extends Fragment {
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
         final TextView timeButton = view.findViewById(R.id.timeButton);
         final EditText editText = view.findViewById(R.id.input_node);
+        final ImageView plusButton = view.findViewById(R.id.plusButton);
+        final View menuBar = view.findViewById(R.id.menuBar);
+
+        plusButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showPopupWindow(menuBar);
+            }
+        });
 
         if (getArguments() != null && getArguments().getInt("tab", -1) == 0) {
             view.findViewById(R.id.week).setVisibility(View.GONE);
@@ -142,11 +178,11 @@ public class ChatFragment extends Fragment {
                             editor.putString("time1", time);
                             editor.apply();
 
-                            createAlarm("【习惯APP】每天总结", hour, minute, -1);
+//                            createAlarm("【习惯APP】每天总结", hour, minute, -1);
                             new android.support.v7.app.AlertDialog.Builder(getContext())
-                                    .setTitle("已为您设置新的闹钟")
-                                    .setMessage("可去系统闹铃里手动关闭旧的闹钟")
-                                    .setPositiveButton("我知道了", null)
+                                    .setTitle("温馨提示")
+                                    .setMessage("闹铃设置-每天总结，如有需要您可自行设置系统闹铃，建议闹铃名为：【习惯】每天总结")
+                                    .setPositiveButton("确认", null)
                                     .setCancelable(false)
                                     .show();
 //                            setBroadcastAlarm(hour, minute);
@@ -209,11 +245,11 @@ public class ChatFragment extends Fragment {
                                     editor.putString("time2", time);
                                     editor.apply();
 
-                                    createAlarm("【习惯APP】每周总结", hour, minute, selected);
+//                                    createAlarm("【习惯APP】每周总结", hour, minute, selected);
                                     new android.support.v7.app.AlertDialog.Builder(getContext())
-                                            .setTitle("已为您设置新的闹钟")
-                                            .setMessage("可去系统闹铃里手动关闭旧的闹钟")
-                                            .setPositiveButton("我知道了", null)
+                                            .setTitle("温馨提示")
+                                            .setMessage("闹铃设置-每周总结，如有需要您可自行设置系统闹铃，建议闹铃名为：【习惯】每周总结")
+                                            .setPositiveButton("确认", null)
                                             .setCancelable(false)
                                             .show();
 //                                    setBroadcastAlarm(hour, minute);
@@ -287,6 +323,10 @@ public class ChatFragment extends Fragment {
                     final String input = v.getText().toString();
                     if (!input.trim().equals("")) {
                         v.setText("");
+                        if (permissionGranted) {
+                            getGPSLocation();
+                            getBestLocation();
+                        }
                         // 手动更新消息列表
                         msgList.addFirst(input);
                         dateList.addFirst(System.currentTimeMillis() / 1000);
@@ -363,7 +403,44 @@ public class ChatFragment extends Fragment {
 
         updateMsg();
 
+        // 获取定位
+        if (permissionGranted) {
+            getGPSLocation();
+            getBestLocation();
+        } else {
+            initPermission();
+        }
+
         return view;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 777) {
+            permissionGranted = grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED;
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_GALLERY_IMAGE && null != data) {
+                Uri selectedImage = data.getData();
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+                Cursor cursor = getActivity().getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+                cursor.moveToFirst();
+
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                picPath = cursor.getString(columnIndex);
+                cursor.close();
+                sendPic(picPath);
+            } else if (requestCode == REQUEST_CAMERA_IMAGE) {
+                sendPic(picPath);
+            }
+        }
     }
 
     // 自定义RecyclerViewAdapter
@@ -386,7 +463,14 @@ public class ChatFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-            holder.msg.setText(msgList.get(position));
+            String msg = msgList.get(position);
+            if (!msg.startsWith("_PIC:")) {
+                holder.msg.setVisibility(View.VISIBLE);
+                holder.msg.setText(msg);
+            } else {
+                holder.pic.setVisibility(View.VISIBLE);
+                getPic(msg, holder.pic);
+            }
 
             // 确定昨天跟今天的时间显示格式
             long date = dateList.get(position) * 1000L;
@@ -401,15 +485,9 @@ public class ChatFragment extends Fragment {
 
             File file = new File(sharedPreferences.getString("mLastProfilePath", ""));
             if (file.exists()) {
-                Bitmap bitmap = null; //从本地取图片
-                try {
-                    bitmap = BitmapFactory.decodeStream(new FileInputStream(file));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                if (bitmap != null) {
-                    holder.profile.setImageBitmap(bitmap); //设置Bitmap为头像
-                }
+                Glide.with(context)
+                        .load(file)
+                        .into(holder.profile);
             }
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -430,12 +508,14 @@ public class ChatFragment extends Fragment {
         class ViewHolder extends RecyclerView.ViewHolder {
 
             private TextView msg;
+            private ImageView pic;
             private TextView msgDate;
             private ImageView profile;
 
             ViewHolder(View itemView) {
                 super(itemView);
                 msg = itemView.findViewById(R.id.msg);
+                pic = itemView.findViewById(R.id.pic);
                 msgDate = itemView.findViewById(R.id.msgDate);
                 profile = itemView.findViewById(R.id.chatProfile);
             }
@@ -580,6 +660,275 @@ public class ChatFragment extends Fragment {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this.getActivity(), currentTab, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 //        alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(c.getTimeInMillis(),pendingIntent) ,pendingIntent);
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
+    }
+
+    private void initPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //检查权限
+            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    || ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                //请求权限
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 777);
+            } else {
+                permissionGranted = true;
+            }
+        } else {
+            permissionGranted = true;
+        }
+    }
+
+    // 通过GPS获取定位信息
+    public void getGPSLocation() {
+        Location gps = LocationUtils.getGPSLocation(getContext());
+        if (gps == null) {
+            //设置定位监听，因为GPS定位，第一次进来可能获取不到，通过设置监听，可以在有效的时间范围内获取定位信息
+            LocationUtils.addLocationListener(getContext(), LocationManager.GPS_PROVIDER, new LocationUtils.ILocationListener() {
+                @Override
+                public void onSuccessLocation(Location location) {
+                    if (location != null) {
+                        lat = new BigDecimal(location.getLatitude());
+                        lng = new BigDecimal(location.getLongitude());
+                        LocationUtils.unRegisterListener(getContext());
+//                        Toast.makeText(mContext, "gps onSuccessLocation location:  lat==" + location.getLatitude() + "     lng==" + location.getLongitude(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        } else {
+            lat = new BigDecimal(gps.getLatitude());
+            lng = new BigDecimal(gps.getLongitude());
+//            Toast.makeText(mContext, "gps location: lat==" + gps.getLatitude() + "  lng==" + gps.getLongitude(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // 采用最好的方式获取定位信息
+    private void getBestLocation() {
+        Criteria c = new Criteria();//Criteria类是设置定位的标准信息（系统会根据你的要求，匹配最适合你的定位供应商），一个定位的辅助信息的类
+        c.setPowerRequirement(Criteria.POWER_LOW);//设置低耗电
+        c.setAltitudeRequired(true);//设置需要海拔
+        c.setBearingAccuracy(Criteria.ACCURACY_COARSE);//设置COARSE精度标准
+        c.setAccuracy(Criteria.ACCURACY_LOW);//设置低精度
+        //... Criteria 还有其他属性，就不一一介绍了
+        Location best = LocationUtils.getBestLocation(getContext(), c);
+        if (best != null) {
+            lat = new BigDecimal(best.getLatitude());
+            lng = new BigDecimal(best.getLongitude());
+//            Toast.makeText(mContext, "best location: lat==" + best.getLatitude() + " lng==" + best.getLongitude(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // 弹窗选择相册或拍照
+    private void showPopupWindow(final View v) {
+        View popupView = View.inflate(getContext(), R.layout.popupwindow_plus_menu, null);
+        View menuAlbum = popupView.findViewById(R.id.menuAlbum);
+        View menuCamera = popupView.findViewById(R.id.menuCamera);
+
+        menuAlbum.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkPermission()) {
+                    Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(i, REQUEST_GALLERY_IMAGE);
+                }
+                popupWindow.dismiss();
+            }
+        });
+        menuCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takePhoto();
+                popupWindow.dismiss();
+            }
+        });
+
+        //获取屏幕宽高
+        int weight = getResources().getDisplayMetrics().widthPixels;
+        int height = getResources().getDisplayMetrics().heightPixels / 3;
+
+        popupWindow = new PopupWindow(popupView, weight, height);
+        popupWindow.setAnimationStyle(R.style.Animation_Design_BottomSheetDialog);
+        popupWindow.setFocusable(true);
+        //点击外部popupWindow消失
+        popupWindow.setOutsideTouchable(true);
+        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) v.getLayoutParams();
+                lp.bottomMargin = 0;
+                v.setLayoutParams(lp);
+            }
+        });
+
+        // 主动计算高度
+        popupWindow.getContentView().measure(0, 0);
+        popupWindow.showAtLocation(v, Gravity.BOTTOM, 0, 0);
+
+        final RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) v.getLayoutParams();
+        // 获取popupWindow高度
+        lp.bottomMargin = popupWindow.getContentView().getMeasuredHeight();
+        // 与动画同步
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                v.setLayoutParams(lp);
+            }
+        }, 200);
+    }
+
+    // 确认权限
+    private boolean checkPermission() {
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(getActivity(), new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.CAMERA
+            }, 666);
+
+            return false;
+        }
+        return true;
+    }
+
+    // 发送图片
+    private void sendPic(String picPath) {
+        if (permissionGranted) {
+            getGPSLocation();
+            getBestLocation();
+        }
+
+        final LoadingDialog loadingDialog = new LoadingDialog(getContext());
+        loadingDialog.setLoadingText("发送中,请稍等...")
+                .setSuccessText("发送成功")
+                .setFailedText("发送失败，请稍后再试！")
+                .setInterceptBack(true)
+                .setRepeatCount(0)
+                .show();
+
+        File file = new File(picPath);
+        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        MultipartBody.Part pic = MultipartBody.Part.createFormData("pic", file.getName(), requestFile);
+        Call<ResponseBody> call = null;
+        switch (currentTab) {
+            case 0:
+                call = retrofitService.sendPic(uid, 0, lat, lng, pic);
+                break;
+            case 2:
+                call = retrofitService.sendPic(uid, 1, lat, lng, pic);
+                break;
+            default:
+                break;
+        }
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                String json;
+                try {
+                    json = response.body().string();
+                    JSONObject jsonObject = JSONObject.parseObject(json);
+                    if (jsonObject.getInteger("retcode").equals(0)) {
+                        loadingDialog.loadSuccess();
+                        //TODO 加图
+                        //复制改名然后addfooteriew
+                    } else {
+                        loadingDialog.loadFailed();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    loadingDialog.loadFailed();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                loadingDialog.loadFailed();
+                Toast toast = Toast.makeText(getContext(), "网络异常，请稍后重试", Toast.LENGTH_SHORT);
+                toast.setText("网络异常，请稍后重试");
+                toast.show();
+            }
+        });
+    }
+
+    // 调用摄像头
+    private void takePhoto() {
+        if (checkPermission()) {
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            // Ensure that there's a camera activity to handle the intent
+            if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+                // Create the File where the photo should go
+                File photo = FileUtils.createImageFile();
+                // Continue only if the File was successfully created
+                if (photo != null) {
+                    // api24后需要使用FileProvider
+                    picPath = photo.getAbsolutePath();
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(getContext(), "com.szwangel.fileprovider", photo));
+                }
+            }
+            // 跳转界面传回拍照所得数据
+            startActivityForResult(takePictureIntent, REQUEST_CAMERA_IMAGE);
+        }
+    }
+
+    // 下载图片
+    private void getPic(String picName, final ImageView picItem) {
+        final int[] size = new int[2];
+
+        final File pic = new File(FileUtils.dirPath + picName.replace("_PIC:" + uid, ""));
+        if (pic.exists()) {
+            Glide.with(this)
+                    .load(pic)
+                    .centerInside()
+                    .into(picItem);
+        } else {
+            Call<ResponseBody> responseBodyCall = retrofitService.pic(picName);
+
+            responseBodyCall.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
+                    String fileName = response.raw().headers().get("Content-Disposition");
+                    if (fileName != null && fileName.contains("fileName=")) {
+                        fileName = fileName.substring(fileName.indexOf("=") + 1).replace("_PIC:" + uid + "/", "");
+
+                        //建立一个文件
+                        final File file = FileUtils.createFile(getContext(), fileName);
+                        if (file.length() == 0) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    FileUtils.writeFile2Disk(response, file);
+                                    if (file.exists()) {
+                                        Glide.with(getContext())
+                                                .load(file)
+                                                .centerInside()
+//                                                .listener(new RequestListener<Drawable>() {
+//                                                    @Override
+//                                                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+//                                                        return false;
+//                                                    }
+//
+//                                                    @Override
+//                                                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+//                                                        size[0] = resource.getIntrinsicWidth();
+//                                                        size[1] = resource.getIntrinsicHeight();
+//                                                        return false;
+//                                                    }
+//                                                })
+//                                                .override(size[0], size[1])
+                                                .into(picItem);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    t.printStackTrace();
+                }
+            });
+        }
     }
 
 }

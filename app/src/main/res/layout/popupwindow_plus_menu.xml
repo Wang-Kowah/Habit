@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/fragmentBack"
+        android:visibility="visible">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorTime" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="13dp">
+
+            <LinearLayout
+                android:id="@+id/menuAlbum"
+                android:layout_width="54dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:paddingLeft="13dp"
+                android:paddingTop="16dp"
+                android:paddingRight="13dp">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_marginBottom="5dp"
+                    android:src="@mipmap/gallery" />
+
+                <TextView
+                    android:layout_width="27dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="相册"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/menuCamera"
+                android:layout_width="54dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:paddingLeft="13dp"
+                android:paddingTop="16dp"
+                android:paddingRight="13dp">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_marginBottom="5dp"
+                    android:src="@mipmap/camera" />
+
+                <TextView
+                    android:layout_width="27dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="拍照"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+</RelativeLayout>

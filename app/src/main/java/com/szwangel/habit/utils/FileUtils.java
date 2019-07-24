@@ -17,22 +17,25 @@ import okhttp3.ResponseBody;
 import retrofit2.Response;
 
 public class FileUtils {
+    public static String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "habit" + File.separator + "Habit";
 
     public static File createFile(Context context, String fileName) {
         String state = Environment.getExternalStorageState();
 
         File file, dir;
-        String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "habit" + File.separator + "pic";
-
         if (state.equals(Environment.MEDIA_MOUNTED)) {
-            dir = new File(filePath);
-            file = new File(filePath + File.separator + fileName);
+            dir = new File(dirPath);
+            file = new File(dirPath + File.separator + fileName);
             try {
                 dir.mkdirs();
                 if (file.exists()) {
-                    file.delete();
+                    if (file.length() != 0)
+                        return file;
+                    else
+                        file.delete();
+                } else {
+                    file.createNewFile();
                 }
-                file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
                 System.out.println(dir.getAbsolutePath() + "\n" + file.getAbsolutePath());

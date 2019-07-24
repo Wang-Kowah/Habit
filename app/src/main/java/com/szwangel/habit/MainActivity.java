@@ -9,12 +9,12 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.provider.AlarmClock;
 import android.provider.MediaStore;
-import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -41,6 +41,7 @@ import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
+import com.bumptech.glide.Glide;
 import com.githang.statusbar.StatusBarCompat;
 import com.szwangel.habit.fragment.ChatFragment;
 import com.szwangel.habit.fragment.ReviewFragment;
@@ -149,6 +150,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
             initView();
             initListener();
+            initPermission();
 
             mLastProfilePath = sharedPreferences.getString("mLastProfilePath", "");
             File file = new File(mLastProfilePath);
@@ -174,6 +176,12 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             updateProfile();
             changeView(0);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+//        initPermission();// 针对6.0以上版本做权限适配，流氓式提醒，体验很差
     }
 
     @Override
@@ -260,7 +268,38 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         }
     }
 
-    @CallSuper
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 666) {
+            for (int permission : grantResults) {
+                if (permission != PackageManager.PERMISSION_GRANTED) {
+                    Toast toast = Toast.makeText(mContext, "请同意应用正常运行所需权限", Toast.LENGTH_SHORT);
+                    toast.setText("请同意应用正常运行所需权限");
+                    toast.show();
+                }
+            }
+
+            // 用户勾选不再提示
+            if (!shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
+                    || !shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    || !shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                try {
+                    Intent intent = new Intent();
+                    intent.setAction(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.parse("package:" + getPackageName()));
+                    startActivity(intent);
+
+                    Toast toast = Toast.makeText(mContext, "您禁止了某些权限并勾选了不再提醒，未获得权限前某些功能可能无法正常运行", Toast.LENGTH_LONG);
+                    toast.setText("您禁止了某些权限并勾选了不再提醒，未获得权限前某些功能可能无法正常运行");
+                    toast.show();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    //    @CallSuper
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -271,6 +310,42 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         }
         return super.dispatchTouchEvent(event);
     }
+
+    // intent的Extra传递失败，此处只能拿到-1
+//    @Override
+//    protected void onNewIntent(Intent intent) {
+//        setIntent(intent);
+//        int tab = intent.getIntExtra("tab", -1);
+//        Log.e("tab",tab+"set");
+//        super.onNewIntent(intent);
+//    }
+
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        // 闹钟跳转
+//        Intent intent = getIntent();
+//        int tab = intent.getIntExtra("tab", -1);
+//        Log.e("tab",tab+"get");
+//        if (tab != -1) {
+//            changeView(tab);
+//
+//            new AlertDialog.Builder(mContext)
+//                    .setTitle("闹钟时间到")
+//                    .setMessage("定时总结，养成习惯")
+//                    .setPositiveButton("好的", null)
+//                    .setCancelable(false)
+//                    .show();
+//
+//            // 重复设定闹钟
+//            Intent newAlarm = new Intent(mContext, RingReceiver.class);
+//            newAlarm.setAction("com.kowah.habit.Ring");
+//            newAlarm.putExtra("tab", tab);
+//            PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, tab, newAlarm, PendingIntent.FLAG_UPDATE_CURRENT);
+//            AlarmManager alarmManager = (AlarmManager) mContext.getApplicationContext().getSystemService(Service.ALARM_SERVICE);
+//            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), pendingIntent);
+//        }
+//    }
 
     private void initView() {
         buttonOne = findViewById(R.id.btn_one);
@@ -358,6 +433,21 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         });
     }
 
+    private void initPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //检查权限
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                //请求权限
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 777);
+            } else {
+//                flag = true;
+            }
+        } else {
+//            flag = true;
+        }
+    }
+
     // 自定义ViewPager适配器
     class MyFragmentStatePagerAdapter extends FragmentStatePagerAdapter {
 
@@ -409,35 +499,32 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
                 String fileName = response.raw().headers().get("Content-Disposition");
                 if (fileName != null && fileName.contains("fileName=")) {
-                    fileName = "user_profile_" + fileName.substring(fileName.indexOf("=") + 1);
+                    fileName = "profile_" + fileName.substring(fileName.indexOf("=") + 1);
 
-                    //建立一个文件
-                    final File file = FileUtils.createFile(mContext, fileName);
+                    File pic = new File(FileUtils.dirPath + File.separator + fileName);
+                    if (!pic.exists()) {
+                        //建立一个文件
+                        final File file = FileUtils.createFile(mContext, fileName);
 
-                    //下载文件后更新UI，放在UI线程
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            FileUtils.writeFile2Disk(response, file);
+                        //下载文件后更新UI，放在UI线程
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                FileUtils.writeFile2Disk(response, file);
 
-                            if (file.exists()) {
-                                Bitmap bitmap = null; //从本地取图片
-                                try {
-                                    bitmap = BitmapFactory.decodeStream(new FileInputStream(file));
-                                } catch (FileNotFoundException e) {
-                                    e.printStackTrace();
+                                if (file.exists()) {
+                                    Glide.with(mContext)
+                                            .load(file)
+                                            .into(profile);
+                                    mLastProfilePath = file.getAbsolutePath();
+
+                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                    editor.putString("mLastProfilePath", mLastProfilePath);
+                                    editor.apply();
                                 }
-                                if (bitmap != null) {
-                                    profile.setImageBitmap(bitmap); //设置Bitmap为头像
-                                }
-                                mLastProfilePath = file.getAbsolutePath();
-
-                                SharedPreferences.Editor editor = sharedPreferences.edit();
-                                editor.putString("mLastProfilePath", mLastProfilePath);
-                                editor.apply();
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             }
 
@@ -547,7 +634,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 if (photo != null) {
                     // api24后需要使用FileProvider
                     mCurrentPhotoPath = photo.getAbsolutePath();
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(mContext, "com.kowah.fileprovider", photo));
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(mContext, "com.szwangel.fileprovider", photo));
                 }
             }
 
@@ -560,15 +647,15 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         // 调用系统中自带的图片剪裁
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        intent.setDataAndType(FileProvider.getUriForFile(mContext, "com.kowah.fileprovider", new File(mCurrentPhotoPath)), "image/*");
+        intent.setDataAndType(FileProvider.getUriForFile(mContext, "com.szwangel.fileprovider", new File(mCurrentPhotoPath)), "image/*");
         // 下面这个crop=true是设置在开启的Intent中设置显示的VIEW可裁剪
         intent.putExtra("crop", "true");
         // aspectX aspectY 是宽高的比例
         intent.putExtra("aspectX", 1);
         intent.putExtra("aspectY", 1);
         // outputX outputY 是裁剪图片宽高，return-data限制最大160
-        intent.putExtra("outputX", 150);
-        intent.putExtra("outputY", 150);
+        intent.putExtra("outputX", 160);
+        intent.putExtra("outputY", 160);
         // MIUI无法通过return-data返回bitmap，需要特殊处理
 //        intent.putExtra("return-data", true);
 
@@ -586,7 +673,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             // 设置PNG的话，透明区域不会变成黑色
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 60, fileOutputStream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
 
             fileOutputStream.close();
         } catch (Exception e) {
@@ -679,73 +766,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
         }
-    }
-
-    //TODO intent的Extra传递失败，此处只能拿到-1
-//    @Override
-//    protected void onNewIntent(Intent intent) {
-//        setIntent(intent);
-//        int tab = intent.getIntExtra("tab", -1);
-//        Log.e("tab",tab+"set");
-//        super.onNewIntent(intent);
-//    }
-
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        // 闹钟跳转
-//        Intent intent = getIntent();
-//        int tab = intent.getIntExtra("tab", -1);
-//        Log.e("tab",tab+"get");
-//        if (tab != -1) {
-//            changeView(tab);
-//
-//            new AlertDialog.Builder(mContext)
-//                    .setTitle("闹钟时间到")
-//                    .setMessage("定时总结，养成习惯")
-//                    .setPositiveButton("好的", null)
-//                    .setCancelable(false)
-//                    .show();
-//
-//            // 重复设定闹钟
-//            Intent newAlarm = new Intent(mContext, RingReceiver.class);
-//            newAlarm.setAction("com.kowah.habit.Ring");
-//            newAlarm.putExtra("tab", tab);
-//            PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, tab, newAlarm, PendingIntent.FLAG_UPDATE_CURRENT);
-//            AlarmManager alarmManager = (AlarmManager) mContext.getApplicationContext().getSystemService(Service.ALARM_SERVICE);
-//            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), pendingIntent);
-//        }
-//    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == 666) {
-            for (int permission : grantResults) {
-                if (permission != PackageManager.PERMISSION_GRANTED) {
-                    Toast toast = Toast.makeText(mContext, "请同意应用正常运行所需权限", Toast.LENGTH_SHORT);
-                    toast.setText("请同意应用正常运行所需权限");
-                    toast.show();
-                }
-            }
-
-            // 用户勾选不再提示
-            if (!shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
-                    || !shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    || !shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                try {
-                    Intent intent = new Intent();
-                    intent.setAction(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    intent.setData(Uri.parse("package:" + getPackageName()));
-                    startActivity(intent);
-
-                    Toast toast = Toast.makeText(mContext, "您禁止了某些权限并勾选了不再提醒，未获得权限前某些功能可能无法正常运行", Toast.LENGTH_LONG);
-                    toast.setText("您禁止了某些权限并勾选了不再提醒，未获得权限前某些功能可能无法正常运行");
-                    toast.show();
-                } catch (Exception ignored) {
-                }
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     // 确认权限

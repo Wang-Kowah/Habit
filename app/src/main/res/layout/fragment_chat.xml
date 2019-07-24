@@ -8,8 +8,7 @@
         android:id="@+id/swipe"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="52dp">
+        android:layout_above="@+id/menuBar">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/chatRecyclerView"
@@ -20,6 +19,7 @@
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <LinearLayout
+        android:id="@+id/menuBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -27,7 +27,7 @@
 
         <LinearLayout
             android:id="@+id/dateButton"
-            android:layout_width="90dp"
+            android:layout_width="70dp"
             android:layout_height="52dp"
             android:layout_gravity="bottom|left"
             android:background="@color/fragmentBack"
@@ -39,7 +39,6 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:paddingLeft="5dp"
                 android:paddingRight="3dp">
 
                 <TextView
@@ -88,6 +87,18 @@
             android:paddingTop="8dp"
             android:paddingRight="3dp"
             android:paddingBottom="8dp" />
-    </LinearLayout>
 
+        <RelativeLayout
+            android:layout_width="37dp"
+            android:layout_height="52dp"
+            android:layout_gravity="bottom|right">
+
+            <ImageView
+                android:id="@+id/plusButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:src="@mipmap/plus" />
+        </RelativeLayout>
+    </LinearLayout>
 </RelativeLayout>
