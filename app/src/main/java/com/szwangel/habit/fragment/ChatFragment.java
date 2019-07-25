@@ -11,6 +11,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.location.Criteria;
 import android.location.Location;
@@ -469,7 +471,7 @@ public class ChatFragment extends Fragment {
                 holder.msg.setText(msg);
             } else {
                 holder.pic.setVisibility(View.VISIBLE);
-                getPic(msg, holder.pic);
+                loadPic(msg, holder.pic);
             }
 
             // 确定昨天跟今天的时间显示格式
@@ -498,6 +500,19 @@ public class ChatFragment extends Fragment {
                 }
             });
 
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return position;
+        }
+
+        @Override
+        public void onViewRecycled(@NonNull ViewHolder holder) {
+            if (holder.pic != null) {
+                Glide.with(context).clear(holder.pic);
+            }
+            super.onViewRecycled(holder);
         }
 
         @Override
@@ -584,6 +599,7 @@ public class ChatFragment extends Fragment {
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 swipeRefreshLayout.setRefreshing(false);
+                pageNum = 1;
                 Toast toast = Toast.makeText(getActivity(), "网络异常，请稍后重试", Toast.LENGTH_SHORT);
                 toast.setText("网络异常，请稍后重试");
                 toast.show();
@@ -806,7 +822,17 @@ public class ChatFragment extends Fragment {
                 .setRepeatCount(0)
                 .show();
 
-        File file = new File(picPath);
+        if (getImageMIMEType(picPath).contains("gif")) {
+            loadingDialog.setFailedText("暂不支持GIF格式的图片");
+            loadingDialog.loadFailed();
+            return;
+        } else if (getImageMIMEType(picPath).contains("webp")) {
+            loadingDialog.setFailedText("暂不支持WebP格式的图片");
+            loadingDialog.loadFailed();
+            return;
+        }
+
+        final File file = new File(picPath);
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         MultipartBody.Part pic = MultipartBody.Part.createFormData("pic", file.getName(), requestFile);
         Call<ResponseBody> call = null;
@@ -828,9 +854,19 @@ public class ChatFragment extends Fragment {
                     json = response.body().string();
                     JSONObject jsonObject = JSONObject.parseObject(json);
                     if (jsonObject.getInteger("retcode").equals(0)) {
+                        // 直接复制图片
+                        String picName = jsonObject.getString("picName");
+                        File pic = FileUtils.createFile(getContext(), picName.replace("_PIC:" + uid + "/", ""));
+                        FileUtils.copyFile(file, pic);
+
+                        // 手动更新消息列表
+                        msgList.addFirst(picName);
+                        dateList.addFirst(Long.parseLong(picName.substring(0, picName.indexOf(".")).replace("_PIC:" + uid + "/", "")));
+                        sentMsgNum++;
+                        adapter.notifyItemInserted(0);
+                        recyclerView.scrollToPosition(0);
+
                         loadingDialog.loadSuccess();
-                        //TODO 加图
-                        //复制改名然后addfooteriew
                     } else {
                         loadingDialog.loadFailed();
                     }
@@ -870,11 +906,19 @@ public class ChatFragment extends Fragment {
         }
     }
 
-    // 下载图片
-    private void getPic(String picName, final ImageView picItem) {
-        final int[] size = new int[2];
+    // 加载图片
+    private void loadPic(String picName, final ImageView picItem) {
+        String picPath = FileUtils.dirPath + picName.replace("_PIC:" + uid, "");
+        //获取屏幕宽度
+        int widthPixels = getResources().getDisplayMetrics().widthPixels * 2 / 3;
+        // 图片尺寸太大时，限制ImageView宽度为屏幕的2/3
+        if (getImageWidthHeight(picPath)[0] > widthPixels) {
+            ViewGroup.LayoutParams layoutParams = picItem.getLayoutParams();
+            layoutParams.width = widthPixels;
+            picItem.setLayoutParams(layoutParams);
+        }
 
-        final File pic = new File(FileUtils.dirPath + picName.replace("_PIC:" + uid, ""));
+        File pic = new File(picPath);
         if (pic.exists()) {
             Glide.with(this)
                     .load(pic)
@@ -901,20 +945,6 @@ public class ChatFragment extends Fragment {
                                         Glide.with(getContext())
                                                 .load(file)
                                                 .centerInside()
-//                                                .listener(new RequestListener<Drawable>() {
-//                                                    @Override
-//                                                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-//                                                        return false;
-//                                                    }
-//
-//                                                    @Override
-//                                                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-//                                                        size[0] = resource.getIntrinsicWidth();
-//                                                        size[1] = resource.getIntrinsicHeight();
-//                                                        return false;
-//                                                    }
-//                                                })
-//                                                .override(size[0], size[1])
                                                 .into(picItem);
                                     }
                                 }
@@ -931,4 +961,28 @@ public class ChatFragment extends Fragment {
         }
     }
 
+    // 获取图片宽高
+    public static int[] getImageWidthHeight(String path) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+
+        /**
+         * 最关键在此，把options.inJustDecodeBounds = true;
+         * 这里再decodeFile()，返回的bitmap为空，但此时调用options.outHeight时，已经包含了图片的高了
+         */
+        options.inJustDecodeBounds = true;
+        Bitmap bitmap = BitmapFactory.decodeFile(path, options); // 此时返回的bitmap为null
+        /**
+         *options.outHeight为原始图片的高
+         */
+        return new int[]{options.outWidth, options.outHeight};
+    }
+
+    // 获取图片类型
+    public static String getImageMIMEType(String path) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        // inJustDecodeBounds设置为true是为了让图片不加载到内存中
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, options);
+        return options.outMimeType;
+    }
 }

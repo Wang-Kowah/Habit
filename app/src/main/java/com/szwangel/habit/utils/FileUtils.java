@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -88,5 +89,36 @@ public class FileUtils {
             e.printStackTrace();
         }
         return image;
+    }
+
+    public static void copyFile(File source, File target) {
+        OutputStream os = null;
+        InputStream is = null;
+        try {
+            is = new FileInputStream(source);
+            os = new FileOutputStream(target);
+            int len;
+            byte[] buff = new byte[1024];
+            while ((len = is.read(buff)) != -1) {
+                os.write(buff, 0, len);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
