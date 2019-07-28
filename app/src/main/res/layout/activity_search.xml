@@ -38,7 +38,7 @@
                     android:layout_marginStart="36dp"
                     android:background="@color/colorPrimary"
                     android:gravity="start|top"
-                    android:hint="要搜索的内容"
+                    android:hint="搜索每日总结"
                     android:imeOptions="actionSearch"
                     android:inputType="text"
                     android:textColor="@color/white"

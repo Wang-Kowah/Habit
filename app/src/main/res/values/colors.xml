@@ -7,5 +7,6 @@
     <color name="colorTime">#AFAFAF</color>
     <color name="fragmentBack">#ECEFF1</color>
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
     <color name="halfWhite">#8CFFFFFF</color>
 </resources>

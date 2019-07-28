@@ -14,16 +14,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.codbking.widget.DatePickDialog;
-import com.codbking.widget.OnSureLisener;
-import com.codbking.widget.bean.DateType;
 import com.szwangel.habit.R;
 import com.szwangel.habit.RingReceiver;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -44,26 +39,26 @@ public class ReviewFragment extends Fragment {
         final TextView reviewTime = view.findViewById(R.id.reviewTime);
         final View reviewBtn = view.findViewById(R.id.reviewBtn);
 
-        reviewTime.setText(sharedPreferences.getString("alertTime", "07:50"));
+//        reviewTime.setText(sharedPreferences.getString("alertTime", "07:50"));
         reviewBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DatePickDialog dialog = new DatePickDialog(getContext());
-                //设置标题
-                dialog.setTitle("选择闹钟时间");
-                //设置类型
-                dialog.setType(DateType.TYPE_HM);
-                //设置消息体的显示格式，日期格式
-                dialog.setMessageFormat("每天  HH:mm");
-                //设置选择回调
-                dialog.setOnChangeLisener(null);
-                //设置点击确定按钮回调
-                dialog.setOnSureLisener(new OnSureLisener() {
-                    @Override
-                    public void onSure(Date date) {
-                        int hour = date.getHours(), minute = date.getMinutes();
-                        String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
-                        reviewTime.setText(time);
+//                DatePickDialog dialog = new DatePickDialog(getContext());
+//                //设置标题
+//                dialog.setTitle("选择闹钟时间");
+//                //设置类型
+//                dialog.setType(DateType.TYPE_HM);
+//                //设置消息体的显示格式，日期格式
+//                dialog.setMessageFormat("每天  HH:mm");
+//                //设置选择回调
+//                dialog.setOnChangeLisener(null);
+//                //设置点击确定按钮回调
+//                dialog.setOnSureLisener(new OnSureLisener() {
+//                    @Override
+//                    public void onSure(Date date) {
+//                        int hour = date.getHours(), minute = date.getMinutes();
+//                        String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
+//                        reviewTime.setText(time);
 //                        Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
 //                        toast.setText("闹钟设置成功");
 //                        if (!time.equals(sharedPreferences.getString("alertTime", "07:50"))) {
@@ -71,13 +66,13 @@ public class ReviewFragment extends Fragment {
 //                        }
 //                        toast.show();
 
-                        editor.putString("alertTime", time);
-                        editor.apply();
+//                        editor.putString("alertTime", time);
+//                        editor.apply();
 
 //                        createAlarm("【习惯APP】早上复习", hour, minute);
                         new android.support.v7.app.AlertDialog.Builder(getContext())
                                 .setTitle("温馨提示")
-                                .setMessage("闹铃设置-早上复习，如有需要您可自行设置系统闹铃，建议闹铃名为：【习惯】早上复习")
+                                .setMessage("闹铃设置-早上复习，如有需要您可以自己去系统闹铃设置闹铃，建议文字提示是：【习惯】早上复习")
                                 .setPositiveButton("确认", null)
                                 .setCancelable(false)
                                 .show();
@@ -90,9 +85,9 @@ public class ReviewFragment extends Fragment {
 //                        }, 300);
                     }
                 });
-                dialog.show();
-            }
-        });
+//                dialog.show();
+//            }
+//        });
 
         return view;
     }

@@ -28,6 +28,7 @@
         android:orientation="horizontal">
 
         <com.daasuu.bl.BubbleLayout
+            android:id="@+id/bubble"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="45dp"
@@ -48,14 +49,14 @@
                 android:maxWidth="210dp"
                 android:textColor="@color/colorText"
                 android:textIsSelectable="true"
-                android:visibility="gone"
-                android:textSize="17sp" />
+                android:textSize="17sp"
+                android:visibility="gone" />
 
             <ImageView
                 android:id="@+id/pic"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
         </com.daasuu.bl.BubbleLayout>
 

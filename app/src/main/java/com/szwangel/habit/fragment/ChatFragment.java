@@ -3,10 +3,8 @@ package com.szwangel.habit.fragment;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -39,11 +37,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -52,9 +48,10 @@ import android.widget.Toast;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bumptech.glide.Glide;
-import com.codbking.widget.DatePickDialog;
-import com.codbking.widget.OnSureLisener;
-import com.codbking.widget.bean.DateType;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
+import com.daasuu.bl.BubbleLayout;
+import com.githang.statusbar.StatusBarCompat;
 import com.szwangel.habit.MyApplication;
 import com.szwangel.habit.R;
 import com.szwangel.habit.RingReceiver;
@@ -69,10 +66,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -149,44 +144,44 @@ public class ChatFragment extends Fragment {
             view.findViewById(R.id.week).setVisibility(View.GONE);
             editText.setHint("   随时记录自己的想法或总结");
 
-            timeButton.setText(sharedPreferences.getString("time1", "22:30"));
+//            timeButton.setText(sharedPreferences.getString("time1", "22:30"));
             timeButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    DatePickDialog dialog = new DatePickDialog(getContext());
-                    //设置标题
-                    dialog.setTitle("选择闹钟时间");
-                    //设置类型
-                    dialog.setType(DateType.TYPE_HM);
-                    //设置消息体的显示格式，日期格式
-                    dialog.setMessageFormat("每天  HH:mm");
-                    //设置选择回调
-                    dialog.setOnChangeLisener(null);
-                    //设置点击确定按钮回调
-                    dialog.setOnSureLisener(new OnSureLisener() {
-                        @Override
-                        public void onSure(Date date) {
-                            int hour = date.getHours(), minute = date.getMinutes();
-
-                            String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
-                            timeButton.setText(time);
-//                            Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
-//                            toast.setText("闹钟设置成功");
-//                            if (!time.equals(sharedPreferences.getString("time1", "22:30"))) {
-//                                toast.setText("闹钟设置成功，请手动删除旧闹钟");
-//                            }
-//                            toast.show();
-
-                            editor.putString("time1", time);
-                            editor.apply();
+//                    DatePickDialog dialog = new DatePickDialog(getContext());
+//                    //设置标题
+//                    dialog.setTitle("选择闹钟时间");
+//                    //设置类型
+//                    dialog.setType(DateType.TYPE_HM);
+//                    //设置消息体的显示格式，日期格式
+//                    dialog.setMessageFormat("每天  HH:mm");
+//                    //设置选择回调
+//                    dialog.setOnChangeLisener(null);
+//                    //设置点击确定按钮回调
+//                    dialog.setOnSureLisener(new OnSureLisener() {
+//                        @Override
+//                        public void onSure(Date date) {
+//                            int hour = date.getHours(), minute = date.getMinutes();
+//
+//                            String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
+//                            timeButton.setText(time);
+////                            Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
+////                            toast.setText("闹钟设置成功");
+////                            if (!time.equals(sharedPreferences.getString("time1", "22:30"))) {
+////                                toast.setText("闹钟设置成功，请手动删除旧闹钟");
+////                            }
+////                            toast.show();
+//
+//                            editor.putString("time1", time);
+//                            editor.apply();
 
 //                            createAlarm("【习惯APP】每天总结", hour, minute, -1);
-                            new android.support.v7.app.AlertDialog.Builder(getContext())
-                                    .setTitle("温馨提示")
-                                    .setMessage("闹铃设置-每天总结，如有需要您可自行设置系统闹铃，建议闹铃名为：【习惯】每天总结")
-                                    .setPositiveButton("确认", null)
-                                    .setCancelable(false)
-                                    .show();
+                    new android.support.v7.app.AlertDialog.Builder(getContext())
+                            .setTitle("温馨提示")
+                            .setMessage("闹铃设置-每天总结，如有需要您可以自己去系统闹铃设置闹铃，建议文字提示是：【习惯】每天总结")
+                            .setPositiveButton("确认", null)
+                            .setCancelable(false)
+                            .show();
 //                            setBroadcastAlarm(hour, minute);
 //                            new Handler().postDelayed(new Runnable() {
 //                                @Override
@@ -195,47 +190,47 @@ public class ChatFragment extends Fragment {
 //                                }
 //                            }, 300);
 
-                        }
-                    });
-                    dialog.show();
+//                        }
+//                    });
+//                    dialog.show();
                 }
             });
 
             currentTab = 0;
             System.out.println("day fragment created");
         } else {
-            final TextView dateTextView = view.findViewById(R.id.dateText);
-            dateTextView.setText(sharedPreferences.getString("dayInWeek", "六"));
-            timeButton.setText(sharedPreferences.getString("time2", "18:50"));
+//            final TextView dateTextView = view.findViewById(R.id.dateText);
+//            dateTextView.setText(sharedPreferences.getString("dayInWeek", "六"));
+//            timeButton.setText(sharedPreferences.getString("time2", "18:50"));
 
             view.findViewById(R.id.dateButton).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    final String[] dayInWeek = {"周一", "周二", "周三", "周四", "周五", "周六", "周日"};
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    AlertDialog alertDialog = builder.setItems(dayInWeek, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, final int selected) {
-                            final String daySelected = dayInWeek[selected].substring(1);
-                            DatePickDialog weekDialog = new DatePickDialog(getContext());
-                            //设置标题
-                            weekDialog.setTitle("选择闹钟时间");
-                            //设置类型
-                            weekDialog.setType(DateType.TYPE_HM);
-                            //设置消息体的显示格式，日期格式
-                            weekDialog.setMessageFormat("每" + dayInWeek[selected] + "  HH:mm");
-                            //设置选择回调
-                            weekDialog.setOnChangeLisener(null);
-                            //设置点击确定按钮回调
-                            weekDialog.setOnSureLisener(new OnSureLisener() {
-                                @Override
-                                public void onSure(Date date) {
-                                    int hour = date.getHours(), minute = date.getMinutes();
-
-                                    String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
-                                    timeButton.setText(time);
-                                    dateTextView.setText(daySelected);
+//                    final String[] dayInWeek = {"周一", "周二", "周三", "周四", "周五", "周六", "周日"};
+//
+//                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+//                    AlertDialog alertDialog = builder.setItems(dayInWeek, new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialog, final int selected) {
+//                            final String daySelected = dayInWeek[selected].substring(1);
+//                            DatePickDialog weekDialog = new DatePickDialog(getContext());
+//                            //设置标题
+//                            weekDialog.setTitle("选择闹钟时间");
+//                            //设置类型
+//                            weekDialog.setType(DateType.TYPE_HM);
+//                            //设置消息体的显示格式，日期格式
+//                            weekDialog.setMessageFormat("每" + dayInWeek[selected] + "  HH:mm");
+//                            //设置选择回调
+//                            weekDialog.setOnChangeLisener(null);
+//                            //设置点击确定按钮回调
+//                            weekDialog.setOnSureLisener(new OnSureLisener() {
+//                                @Override
+//                                public void onSure(Date date) {
+//                                    int hour = date.getHours(), minute = date.getMinutes();
+//
+//                                    String time = String.format(Locale.CHINA, "%02d:%02d", hour, minute);
+//                                    timeButton.setText(time);
+//                                    dateTextView.setText(daySelected);
 //                                    Toast toast = Toast.makeText(getContext(), "闹钟设置成功", Toast.LENGTH_SHORT);
 //                                    toast.setText("闹钟设置成功");
 //                                    if (!time.equals(sharedPreferences.getString("time2", "18:50")) || !daySelected.equals(sharedPreferences.getString("dayInWeek", "六"))) {
@@ -243,17 +238,17 @@ public class ChatFragment extends Fragment {
 //                                    }
 //                                    toast.show();
 
-                                    editor.putString("dayInWeek", daySelected);
-                                    editor.putString("time2", time);
-                                    editor.apply();
+//                                    editor.putString("dayInWeek", daySelected);
+//                                    editor.putString("time2", time);
+//                                    editor.apply();
 
 //                                    createAlarm("【习惯APP】每周总结", hour, minute, selected);
-                                    new android.support.v7.app.AlertDialog.Builder(getContext())
-                                            .setTitle("温馨提示")
-                                            .setMessage("闹铃设置-每周总结，如有需要您可自行设置系统闹铃，建议闹铃名为：【习惯】每周总结")
-                                            .setPositiveButton("确认", null)
-                                            .setCancelable(false)
-                                            .show();
+                    new android.support.v7.app.AlertDialog.Builder(getContext())
+                            .setTitle("温馨提示")
+                            .setMessage("闹铃设置-每周总结，如有需要您可以自己去系统闹铃设置闹铃，建议文字提示是：【习惯】每周总结")
+                            .setPositiveButton("确认", null)
+                            .setCancelable(false)
+                            .show();
 //                                    setBroadcastAlarm(hour, minute);
 //                                    new Handler().postDelayed(new Runnable() {
 //                                        @Override
@@ -261,18 +256,18 @@ public class ChatFragment extends Fragment {
 //                                            showAlarm();
 //                                        }
 //                                    }, 300);
-                                }
-                            });
-                            weekDialog.show();
-                        }
-                    }).setTitle("选择要做总结的时间").create();
-                    alertDialog.show();
+//                                }
+//                            });
+//                            weekDialog.show();
+//                        }
+//                    }).setTitle("选择要做总结的时间").create();
+//                    alertDialog.show();
 
                     // 设置宽度
-                    WindowManager.LayoutParams layoutParams = alertDialog.getWindow().getAttributes();
-                    layoutParams.width = getResources().getDisplayMetrics().widthPixels * 5 / 6;
-                    layoutParams.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-                    alertDialog.getWindow().setAttributes(layoutParams);
+//                    WindowManager.LayoutParams layoutParams = alertDialog.getWindow().getAttributes();
+//                    layoutParams.width = getResources().getDisplayMetrics().widthPixels * 5 / 6;
+//                    layoutParams.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+//                    alertDialog.getWindow().setAttributes(layoutParams);
                 }
             });
 
@@ -465,13 +460,53 @@ public class ChatFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-            String msg = msgList.get(position);
+            final String msg = msgList.get(position);
             if (!msg.startsWith("_PIC:")) {
                 holder.msg.setVisibility(View.VISIBLE);
                 holder.msg.setText(msg);
             } else {
+                holder.bubbleLayout.setPadding(0, 0, 0, 0);
                 holder.pic.setVisibility(View.VISIBLE);
                 loadPic(msg, holder.pic);
+                holder.pic.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        View popupView = View.inflate(getContext(), R.layout.popupwindow_preview_image, null);
+                        ImageView preview = popupView.findViewById(R.id.preview_image);
+
+                        popupView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                popupWindow.dismiss();
+                            }
+                        });
+
+                        //获取屏幕宽高
+                        int weight = getResources().getDisplayMetrics().widthPixels;
+                        int height = getResources().getDisplayMetrics().heightPixels;
+
+                        popupWindow = new PopupWindow(popupView, weight, height);
+                        popupWindow.setAnimationStyle(R.style.AppTheme);
+                        popupWindow.setFocusable(true);
+                        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                            @Override
+                            public void onDismiss() {
+                                StatusBarCompat.setStatusBarColor(getActivity(), getResources().getColor(R.color.colorPrimary));
+                            }
+                        });
+                        popupWindow.showAtLocation(popupView, Gravity.BOTTOM, 0, 0);
+                        StatusBarCompat.setStatusBarColor(getActivity(), getResources().getColor(R.color.black));
+
+                        String picPath = FileUtils.dirPath + msg.replace("_PIC:" + uid, "");
+                        File pic = new File(picPath);
+                        if (pic.exists()) {
+                            Glide.with(context)
+                                    .load(pic)
+                                    .centerInside()
+                                    .into(preview);
+                        }
+                    }
+                });
             }
 
             // 确定昨天跟今天的时间显示格式
@@ -492,13 +527,13 @@ public class ChatFragment extends Fragment {
                         .into(holder.profile);
             }
 
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    holder.itemView.requestFocus();
-                    holder.itemView.clearFocus();
-                }
-            });
+//            holder.itemView.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    holder.itemView.requestFocus();
+//                    holder.itemView.clearFocus();
+//                }
+//            });
 
         }
 
@@ -521,7 +556,7 @@ public class ChatFragment extends Fragment {
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
-
+            private BubbleLayout bubbleLayout;
             private TextView msg;
             private ImageView pic;
             private TextView msgDate;
@@ -529,6 +564,7 @@ public class ChatFragment extends Fragment {
 
             ViewHolder(View itemView) {
                 super(itemView);
+                bubbleLayout = itemView.findViewById(R.id.bubble);
                 msg = itemView.findViewById(R.id.msg);
                 pic = itemView.findViewById(R.id.pic);
                 msgDate = itemView.findViewById(R.id.msgDate);
@@ -918,11 +954,13 @@ public class ChatFragment extends Fragment {
             picItem.setLayoutParams(layoutParams);
         }
 
+        final RequestOptions options = RequestOptions.bitmapTransform(new RoundedCorners(15));
         File pic = new File(picPath);
         if (pic.exists()) {
             Glide.with(this)
                     .load(pic)
                     .centerInside()
+                    .apply(options)
                     .into(picItem);
         } else {
             Call<ResponseBody> responseBodyCall = retrofitService.pic(picName);
@@ -945,6 +983,7 @@ public class ChatFragment extends Fragment {
                                         Glide.with(getContext())
                                                 .load(file)
                                                 .centerInside()
+                                                .apply(options)
                                                 .into(picItem);
                                     }
                                 }
