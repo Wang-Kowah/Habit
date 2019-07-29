@@ -3,7 +3,6 @@ package com.szwangel.habit.fragment;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.AlarmClock;
 import android.support.annotation.NonNull;
@@ -12,15 +11,12 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.szwangel.habit.R;
 import com.szwangel.habit.RingReceiver;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-
-import static android.content.Context.MODE_PRIVATE;
 
 public class ReviewFragment extends Fragment {
 
@@ -32,11 +28,11 @@ public class ReviewFragment extends Fragment {
 
 //        alarmManager = (AlarmManager) getActivity().getApplicationContext().getSystemService(Service.ALARM_SERVICE);
 
-        final SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_data", MODE_PRIVATE);
-        final SharedPreferences.Editor editor = sharedPreferences.edit();
+//        final SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_data", MODE_PRIVATE);
+//        final SharedPreferences.Editor editor = sharedPreferences.edit();
 
         View view = inflater.inflate(R.layout.fragment_review, container, false);
-        final TextView reviewTime = view.findViewById(R.id.reviewTime);
+//        final TextView reviewTime = view.findViewById(R.id.reviewTime);
         final View reviewBtn = view.findViewById(R.id.reviewBtn);
 
 //        reviewTime.setText(sharedPreferences.getString("alertTime", "07:50"));
@@ -83,11 +79,11 @@ public class ReviewFragment extends Fragment {
 //                                showAlarm();
 //                            }
 //                        }, 300);
-                    }
-                });
+//                    }
+//                });
 //                dialog.show();
-//            }
-//        });
+            }
+        });
 
         return view;
     }

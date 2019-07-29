@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.location.Criteria;
 import android.location.Location;
@@ -37,6 +38,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -125,7 +127,7 @@ public class ChatFragment extends Fragment {
 //        alarmManager = (AlarmManager) getActivity().getApplicationContext().getSystemService(Service.ALARM_SERVICE);
 
         sharedPreferences = getActivity().getSharedPreferences("user_data", MODE_PRIVATE);
-        final SharedPreferences.Editor editor = sharedPreferences.edit();
+//        final SharedPreferences.Editor editor = sharedPreferences.edit();
 
         final View view = inflater.inflate(R.layout.fragment_chat, container, false);
         final TextView timeButton = view.findViewById(R.id.timeButton);
@@ -408,6 +410,20 @@ public class ChatFragment extends Fragment {
             initPermission();
         }
 
+        // fragment切换时滑到最底来避免glide加载图片的影响
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                recyclerView.scrollToPosition(0);
+            }
+        }, 100);
+        // 开启时响应慢100ms不够
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                recyclerView.scrollToPosition(0);
+            }
+        }, 600);
         return view;
     }
 
@@ -466,6 +482,9 @@ public class ChatFragment extends Fragment {
                 holder.msg.setText(msg);
             } else {
                 holder.bubbleLayout.setPadding(0, 0, 0, 0);
+                holder.bubbleLayout.setStrokeWidth(0);
+                // 设置alpha=0透明背景
+                holder.bubbleLayout.setBubbleColor(Color.argb(0,0,0,0));
                 holder.pic.setVisibility(View.VISIBLE);
                 loadPic(msg, holder.pic);
                 holder.pic.setOnClickListener(new View.OnClickListener() {
@@ -481,13 +500,11 @@ public class ChatFragment extends Fragment {
                             }
                         });
 
-                        //获取屏幕宽高
-                        int weight = getResources().getDisplayMetrics().widthPixels;
-                        int height = getResources().getDisplayMetrics().heightPixels;
-
-                        popupWindow = new PopupWindow(popupView, weight, height);
+                        popupWindow = new PopupWindow(popupView,
+                                WindowManager.LayoutParams.MATCH_PARENT,
+                                WindowManager.LayoutParams.MATCH_PARENT,
+                                true);
                         popupWindow.setAnimationStyle(R.style.AppTheme);
-                        popupWindow.setFocusable(true);
                         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
                             @Override
                             public void onDismiss() {
@@ -822,6 +839,7 @@ public class ChatFragment extends Fragment {
             @Override
             public void run() {
                 v.setLayoutParams(lp);
+                recyclerView.scrollToPosition(0);
             }
         }, 200);
     }
@@ -944,13 +962,21 @@ public class ChatFragment extends Fragment {
 
     // 加载图片
     private void loadPic(String picName, final ImageView picItem) {
+        // 这句放到限制宽高后面会导致限制失效。。原因未知
         String picPath = FileUtils.dirPath + picName.replace("_PIC:" + uid, "");
-        //获取屏幕宽度
-        int widthPixels = getResources().getDisplayMetrics().widthPixels * 2 / 3;
-        // 图片尺寸太大时，限制ImageView宽度为屏幕的2/3
-        if (getImageWidthHeight(picPath)[0] > widthPixels) {
+        // 获取屏幕宽度来确定ImageView的最大宽高
+        int maxPixels = getResources().getDisplayMetrics().widthPixels * 5 / 9;
+        // 限制ImageView的最大宽高
+        int picWidth = getImageWidthHeight(picPath)[0];
+        int picHeight = getImageWidthHeight(picPath)[1];
+        if (picWidth >= picHeight && picWidth > maxPixels) {
             ViewGroup.LayoutParams layoutParams = picItem.getLayoutParams();
-            layoutParams.width = widthPixels;
+            layoutParams.width = maxPixels;
+            picItem.setLayoutParams(layoutParams);
+        }
+        if (picWidth < picHeight && picHeight > maxPixels) {
+            ViewGroup.LayoutParams layoutParams = picItem.getLayoutParams();
+            layoutParams.height = maxPixels;
             picItem.setLayoutParams(layoutParams);
         }
 
