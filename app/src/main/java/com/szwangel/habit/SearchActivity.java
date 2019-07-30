@@ -272,7 +272,8 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 // 高亮搜索词
                 SpannableString spannableString = new SpannableString(itemViewHolder.searchMsg.getText().toString());
                 ForegroundColorSpan span = new ForegroundColorSpan(getColor(R.color.colorPrimary));
-                int start = msg.indexOf(key);
+                // 避免大小写不一致导致找不到key的位置
+                int start = msg.toLowerCase().indexOf(key.toLowerCase());
                 spannableString.setSpan(span, start, start+ key.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
                 itemViewHolder.searchMsg.setText(spannableString);
             } else if (holder instanceof RefreshAdapter.FooterViewHolder) {
