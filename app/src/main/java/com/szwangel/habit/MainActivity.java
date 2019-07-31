@@ -524,6 +524,15 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                                 }
                             }
                         });
+                    } else {
+                        Glide.with(mContext)
+                                .load(pic)
+                                .into(profile);
+                        mLastProfilePath = pic.getAbsolutePath();
+
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("mLastProfilePath", mLastProfilePath);
+                        editor.apply();
                     }
                 }
             }
