@@ -71,7 +71,7 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
         buttonOne = findViewById(R.id.btn_one2);
         buttonTwo = findViewById(R.id.btn_two2);
         buttonThree = findViewById(R.id.btn_three2);
-        returnButton = findViewById(R.id.returnbutton);
+        returnButton = findViewById(R.id.close_keyword);
 
         buttonOne.setOnClickListener(this);
         buttonTwo.setOnClickListener(this);
@@ -119,7 +119,7 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
             case R.id.btn_three2:
                 updateActivity(2);
                 break;
-            case R.id.returnbutton:
+            case R.id.close_keyword:
                 finish();
                 break;
             default:

@@ -12,29 +12,33 @@
         android:layout_marginLeft="-13dp"
         android:background="@color/colorPrimary">
 
-        <LinearLayout
-            android:id="@+id/returnbutton"
-            android:layout_width="48dp"
-            android:layout_height="match_parent"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="8dp">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginTop="5dp"
-                android:src="@mipmap/return_button" />
-        </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="关键词"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="118dp"
-            android:text="关键词"
-            android:textColor="@color/white"
-            android:textSize="18sp" />
+            <RelativeLayout
+                android:id="@+id/close_keyword"
+                android:layout_width="48dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true">
 
+                <ImageView
+                    android:layout_width="21dp"
+                    android:layout_height="21dp"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="14dp"
+                    android:src="@mipmap/close" />
+            </RelativeLayout>
+        </RelativeLayout>
     </android.support.v7.widget.Toolbar>
 
     <!-- 三个导航按钮 -->

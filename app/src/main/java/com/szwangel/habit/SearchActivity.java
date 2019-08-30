@@ -42,7 +42,7 @@ import retrofit2.Retrofit;
 public class SearchActivity extends AppCompatActivity implements View.OnClickListener {
     Context mContext;
     EditText searchText;
-    TextView cancel;
+    View cancel;
     RecyclerView recyclerView;
     RefreshAdapter adapter;
 
@@ -84,7 +84,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     private void initView() {
         searchText = findViewById(R.id.search_edittext);
         searchText.setHintTextColor(getResources().getColor(R.color.halfWhite));
-        cancel = findViewById(R.id.cancel_search);
+        cancel = findViewById(R.id.close_search);
 
         dateList = new ArrayList<>();
         msgList = new ArrayList<>();
@@ -161,7 +161,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.cancel_search:
+            case R.id.close_search:
                 finish();
                 break;
         }

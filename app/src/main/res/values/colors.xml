@@ -9,4 +9,5 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="halfWhite">#8CFFFFFF</color>
+    <color name="bubbleBack">#6E7374</color>
 </resources>

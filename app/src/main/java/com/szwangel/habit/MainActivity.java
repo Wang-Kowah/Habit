@@ -8,6 +8,8 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,6 +29,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -37,6 +40,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 
@@ -98,8 +102,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
     // 底部弹窗
     PopupWindow popupWindow;
 
-    View keyword;
-    View search;
+    View plusMenu;
     ImageView profile;
 
     SharedPreferences sharedPreferences;
@@ -196,9 +199,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             case R.id.btn_three:
                 changeView(2);
                 break;
-            case R.id.keywordButton:
-                navigateTo(KeywordActivity.class);
-                break;
             case R.id.user:
                 showPopupWindow();
                 break;
@@ -214,11 +214,22 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 popupWindow.dismiss();
                 break;
             case R.id.btn_pop_cancel:
-//                navigateTo(LoginActivity.class);
                 popupWindow.dismiss();
                 break;
-            case R.id.searchButton:
+            case R.id.bubblemenu:
+                showBubbleMenu();
+                break;
+            case R.id.menuSearch:
                 navigateTo(SearchActivity.class);
+                popupWindow.dismiss();
+                break;
+            case R.id.menuKeyword:
+                navigateTo(KeywordActivity.class);
+                popupWindow.dismiss();
+                break;
+            case R.id.menuHereAndNow:
+                navigateTo(HereAndNowActivity.class);
+                popupWindow.dismiss();
                 break;
             case R.id.timeButton:
                 break;
@@ -352,8 +363,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         buttonTwo = findViewById(R.id.btn_two);
         buttonThree = findViewById(R.id.btn_three);
         profile = findViewById(R.id.user);
-        keyword = findViewById(R.id.keywordButton);
-        search = findViewById(R.id.searchButton);
+        plusMenu = findViewById(R.id.bubblemenu);
 
         buttonList = new ArrayList<>();
         buttonList.add(buttonOne);
@@ -401,32 +411,17 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         buttonTwo.setOnClickListener(this);
         buttonThree.setOnClickListener(this);
         profile.setOnClickListener(this);
-        keyword.setOnClickListener(this);
-        keyword.setOnTouchListener(new View.OnTouchListener() {
+        plusMenu.setOnClickListener(this);
+        plusMenu.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    keyword.setBackground(getDrawable(R.color.colorText));
-                    keyword.setAlpha(0.3F);
+                    plusMenu.setBackground(getDrawable(R.color.colorText));
+                    plusMenu.setAlpha(0.3F);
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    keyword.setBackground(getDrawable(R.color.colorPrimary));
-                    keyword.setAlpha(1);
-                }
-                return false;
-            }
-        });
-        search.setOnClickListener(this);
-        search.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    search.setBackground(getDrawable(R.color.colorText));
-                    search.setAlpha(0.3F);
-                }
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    search.setBackground(getDrawable(R.color.colorPrimary));
-                    search.setAlpha(1);
+                    plusMenu.setBackground(getDrawable(R.color.colorPrimary));
+                    plusMenu.setAlpha(1);
                 }
                 return false;
             }
@@ -777,7 +772,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         }
     }
 
-    // 确认权限
+    // 确认必要权限
     private boolean checkPermission() {
         if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(mContext, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
@@ -792,6 +787,84 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             return false;
         }
         return true;
+    }
+
+    // 弹出右上角菜单
+    private void showBubbleMenu() {
+        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LinearLayout linearLayout = new LinearLayout(mContext);
+        View popupView = inflater.inflate(R.layout.popupwindow_bubble_menu, linearLayout);
+        final View search = popupView.findViewById(R.id.menuSearch);
+        final View keyword = popupView.findViewById(R.id.menuKeyword);
+        final View hereAndNow = popupView.findViewById(R.id.menuHereAndNow);
+
+        search.setOnClickListener(this);
+        keyword.setOnClickListener(this);
+        hereAndNow.setOnClickListener(this);
+        search.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    // 避免圆角被覆盖
+                    Drawable drawable = search.getBackground();
+                    if (drawable instanceof GradientDrawable) {
+                        ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.black));
+                        search.setAlpha(0.3F);
+                    }
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    Drawable drawable = search.getBackground();
+                    if (drawable instanceof GradientDrawable) {
+                        ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.bubbleBack));
+                        search.setAlpha(1);
+                    }
+                }
+                return false;
+            }
+        });
+        keyword.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    keyword.setBackground(getDrawable(R.color.black));
+                    keyword.setAlpha(0.3F);
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    keyword.setBackground(getDrawable(R.color.bubbleBack));
+                    keyword.setAlpha(1);
+                }
+                return false;
+            }
+        });
+        hereAndNow.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    // 避免圆角被覆盖
+                    Drawable drawable = hereAndNow.getBackground();
+                    if (drawable instanceof GradientDrawable) {
+                        ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.black));
+                        hereAndNow.setAlpha(0.3F);
+                    }
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    Drawable drawable = hereAndNow.getBackground();
+                    if (drawable instanceof GradientDrawable) {
+                        ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.bubbleBack));
+                        hereAndNow.setAlpha(1);
+                    }
+                }
+                return false;
+            }
+        });
+
+        popupWindow = new PopupWindow(popupView,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                true);
+        popupWindow.setOutsideTouchable(true);
+
+        popupWindow.showAsDropDown(plusMenu, 0, 0);
     }
 
 }

@@ -65,4 +65,7 @@ public interface RetrofitService {
     @GET("user/pic")
     Call<ResponseBody> pic(@Query("picName") String picName);
 
+    @FormUrlEncoded
+    @POST("user/hereAndNow")
+    Call<ResponseBody> hereAndNow(@Field("uid") int uid, @Field("lat") BigDecimal lat, @Field("lng") BigDecimal lng, @Field("time") int time, @Field("distance") int distance);
 }
