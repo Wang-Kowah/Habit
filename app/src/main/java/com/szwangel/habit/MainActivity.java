@@ -178,6 +178,9 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
             updateProfile();
             changeView(0);
+
+            // 启动页替换为此时此地
+            navigateTo(HereAndNowActivity.class);
         }
     }
 
@@ -791,9 +794,11 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
     // 弹出右上角菜单
     private void showBubbleMenu() {
+        // 新建一个parent来初始化使wrap_content能生效
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         LinearLayout linearLayout = new LinearLayout(mContext);
         View popupView = inflater.inflate(R.layout.popupwindow_bubble_menu, linearLayout);
+
         final View search = popupView.findViewById(R.id.menuSearch);
         final View keyword = popupView.findViewById(R.id.menuKeyword);
         final View hereAndNow = popupView.findViewById(R.id.menuHereAndNow);
@@ -808,15 +813,13 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                     // 避免圆角被覆盖
                     Drawable drawable = search.getBackground();
                     if (drawable instanceof GradientDrawable) {
-                        ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.black));
-                        search.setAlpha(0.3F);
+                        ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.halfBlack));
                     }
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     Drawable drawable = search.getBackground();
                     if (drawable instanceof GradientDrawable) {
                         ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.bubbleBack));
-                        search.setAlpha(1);
                     }
                 }
                 return false;
@@ -826,12 +829,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    keyword.setBackground(getDrawable(R.color.black));
-                    keyword.setAlpha(0.3F);
+                    keyword.setBackground(getDrawable(R.color.halfBlack));
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     keyword.setBackground(getDrawable(R.color.bubbleBack));
-                    keyword.setAlpha(1);
                 }
                 return false;
             }
@@ -843,15 +844,13 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                     // 避免圆角被覆盖
                     Drawable drawable = hereAndNow.getBackground();
                     if (drawable instanceof GradientDrawable) {
-                        ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.black));
-                        hereAndNow.setAlpha(0.3F);
+                        ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.halfBlack));
                     }
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     Drawable drawable = hereAndNow.getBackground();
                     if (drawable instanceof GradientDrawable) {
                         ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.bubbleBack));
-                        hereAndNow.setAlpha(1);
                     }
                 }
                 return false;

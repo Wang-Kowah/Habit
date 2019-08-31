@@ -120,8 +120,8 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
         recyclerView.setAdapter(adapter);
 
         alertDialog = new android.support.v7.app.AlertDialog.Builder(mContext)
-                .setTitle("无法获取当前定位")
-                .setMessage("本功能基于当前时间与地点来展示您过去在此时此地发送过的帖子，需要开启定位才能使用")
+                .setTitle("定位失败")
+                .setMessage("本功能基于当前时间与地点来展示您过去在此时此地发送过的帖子，需要开启定位才能正常使用")
                 .setPositiveButton("重新加载", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

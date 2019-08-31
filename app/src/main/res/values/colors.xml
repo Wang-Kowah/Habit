@@ -7,7 +7,8 @@
     <color name="colorTime">#AFAFAF</color>
     <color name="fragmentBack">#ECEFF1</color>
     <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>
     <color name="halfWhite">#8CFFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="halfBlack">#8C000000</color>
     <color name="bubbleBack">#6E7374</color>
 </resources>

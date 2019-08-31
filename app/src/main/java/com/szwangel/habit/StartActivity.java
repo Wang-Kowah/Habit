@@ -58,7 +58,7 @@ public class StartActivity extends AppCompatActivity {
                 public void run() {
                     getHome();
                 }
-            }, 1000);
+            }, 100);
         }
     }
 
