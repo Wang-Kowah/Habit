@@ -53,7 +53,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.daasuu.bl.BubbleLayout;
-import com.githang.statusbar.StatusBarCompat;
 import com.szwangel.habit.MyApplication;
 import com.szwangel.habit.R;
 import com.szwangel.habit.RingReceiver;
@@ -484,7 +483,7 @@ public class ChatFragment extends Fragment {
                 holder.bubbleLayout.setPadding(0, 0, 0, 0);
                 holder.bubbleLayout.setStrokeWidth(0);
                 // 设置alpha=0透明背景
-                holder.bubbleLayout.setBubbleColor(Color.argb(0,0,0,0));
+                holder.bubbleLayout.setBubbleColor(Color.argb(0, 0, 0, 0));
                 holder.pic.setVisibility(View.VISIBLE);
                 loadPic(msg, holder.pic);
                 holder.pic.setOnClickListener(new View.OnClickListener() {
@@ -496,7 +495,14 @@ public class ChatFragment extends Fragment {
                         popupView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                popupWindow.dismiss();
+                                // 显示状态栏，防止画面抖动
+                                getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                                new Handler().postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        popupWindow.dismiss();
+                                    }
+                                }, 80);
                             }
                         });
 
@@ -508,11 +514,16 @@ public class ChatFragment extends Fragment {
                         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
                             @Override
                             public void onDismiss() {
-                                StatusBarCompat.setStatusBarColor(getActivity(), getResources().getColor(R.color.colorPrimary));
                             }
                         });
                         popupWindow.showAtLocation(popupView, Gravity.BOTTOM, 0, 0);
-                        StatusBarCompat.setStatusBarColor(getActivity(), getResources().getColor(R.color.black));
+                        // 隐藏状态栏，防止画面抖动
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                            }
+                        }, 50);
 
                         String picPath = FileUtils.dirPath + msg.replace("_PIC:" + uid, "");
                         File pic = new File(picPath);
