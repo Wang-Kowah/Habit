@@ -67,5 +67,5 @@ public interface RetrofitService {
 
     @FormUrlEncoded
     @POST("user/hereAndNow")
-    Call<ResponseBody> hereAndNow(@Field("uid") int uid, @Field("lat") BigDecimal lat, @Field("lng") BigDecimal lng, @Field("time") int time, @Field("distance") int distance);
+    Call<ResponseBody> hereAndNow(@Field("uid") int uid, @Field("lat") BigDecimal lat, @Field("lng") BigDecimal lng);
 }

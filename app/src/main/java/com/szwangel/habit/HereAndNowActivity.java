@@ -53,6 +53,7 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
     View close;
     AlertDialog.Builder alertDialog;
     RecyclerView recyclerView;
+    TextView textView;
     MsgAdapter adapter;
 
     ArrayList<Integer> dateList;
@@ -62,8 +63,6 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
     BigDecimal lat;
     BigDecimal lng;
     int uid;
-    int time = 30;
-    int distance = 500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +110,7 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
 
     private void initView() {
         close = findViewById(R.id.close_hereandnow);
+        textView = findViewById(R.id.hereAndNowTextView);
 
         dateList = new ArrayList<>();
         msgList = new ArrayList<>();
@@ -183,7 +183,7 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
         }
 
         if (lat != null && lng != null) {
-            Call<ResponseBody> call = retrofitService.hereAndNow(uid, lat, lng, time, distance);
+            Call<ResponseBody> call = retrofitService.hereAndNow(uid, lat, lng);
             call.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -201,6 +201,9 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
                                 toast.setText("暂无相关历史内容");
                                 toast.show();
                             } else {
+                                recyclerView.setVisibility(View.VISIBLE);
+                                textView.setVisibility(View.GONE);
+
                                 JSONArray jsonArray = jsonObject.getJSONArray("noteList");
                                 ArrayList<Integer> dates = new ArrayList<>();
                                 ArrayList<String> msgs = new ArrayList<>();
