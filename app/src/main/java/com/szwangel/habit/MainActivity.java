@@ -2,6 +2,7 @@ package com.szwangel.habit;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -233,6 +234,25 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
             case R.id.menuHereAndNow:
                 navigateTo(HereAndNowActivity.class);
                 popupWindow.dismiss();
+                break;
+            case R.id.menuLogout:
+                popupWindow.dismiss();
+                new android.support.v7.app.AlertDialog.Builder(mContext)
+                        .setMessage("退出后不会删除任何历史数据，下次登录依然可以使用本账号。")
+                        .setPositiveButton("退出", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putInt("uid", -1);
+                                editor.apply();
+
+                                navigateTo(LoginActivity.class);
+                                finish();
+                            }
+                        })
+                        .setNegativeButton("取消", null)
+                        .setCancelable(true)
+                        .show();
                 break;
             case R.id.timeButton:
                 break;
@@ -802,10 +822,12 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         final View search = popupView.findViewById(R.id.menuSearch);
         final View keyword = popupView.findViewById(R.id.menuKeyword);
         final View hereAndNow = popupView.findViewById(R.id.menuHereAndNow);
+        final View logout = popupView.findViewById(R.id.menuLogout);
 
         search.setOnClickListener(this);
         keyword.setOnClickListener(this);
         hereAndNow.setOnClickListener(this);
+        logout.setOnClickListener(this);
         search.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -849,6 +871,25 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     Drawable drawable = hereAndNow.getBackground();
+                    if (drawable instanceof GradientDrawable) {
+                        ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.bubbleBack));
+                    }
+                }
+                return false;
+            }
+        });
+        logout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    // 避免圆角被覆盖
+                    Drawable drawable = logout.getBackground();
+                    if (drawable instanceof GradientDrawable) {
+                        ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.halfBlack));
+                    }
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    Drawable drawable = logout.getBackground();
                     if (drawable instanceof GradientDrawable) {
                         ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.bubbleBack));
                     }
