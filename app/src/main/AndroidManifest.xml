@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.szwangel.habit">
-
+    <!-- <uses-permission android:name="com.android.alarm.permission.SET_ALARM" /> -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- <uses-permission android:name="com.android.alarm.permission.SET_ALARM" /> -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:name=".MyApplication"
@@ -19,6 +21,7 @@
         android:roundIcon="@mipmap/yuanjiao"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".VoiceAssistantActivity"></activity>
 
         <receiver
             android:name=".RingReceiver"
@@ -43,7 +46,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".LoginActivity"
-            android:screenOrientation="portrait" /> <!-- launchMode待定 -->
+            android:screenOrientation="portrait" />
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait" />
@@ -66,13 +69,30 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
-        </provider> <!-- 1920×1080，dp = px/(dpi/160)，xxhdpi为480，换算比例为3 -->
+        </provider>
+
+        <!-- 1920×1080，dp = px/(dpi/160)，xxhdpi为480，换算比例为3 -->
         <meta-data
             android:name="design_width_in_dp"
             android:value="360" />
         <meta-data
             android:name="design_height_in_dp"
             android:value="640" />
+
+        <!-- 百度语音识别SDK -->
+        <meta-data
+            android:name="com.baidu.speech.APP_ID"
+            android:value="15590577" />
+        <meta-data
+            android:name="com.baidu.speech.API_KEY"
+            android:value="q2uPyBe6LmWTZlvb0g1dzcHV" />
+        <meta-data
+            android:name="com.baidu.speech.SECRET_KEY"
+            android:value="y7S7hAI894BB3LF1yHYmvQEus1B6wPvj" />
+
+        <service
+            android:name="com.baidu.speech.VoiceRecognitionService"
+            android:exported="false" />
     </application>
 
 </manifest>

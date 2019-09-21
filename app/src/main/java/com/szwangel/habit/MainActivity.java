@@ -254,6 +254,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                         .setCancelable(true)
                         .show();
                 break;
+            case R.id.menuVoiceAssistant:
+                navigateTo(VoiceAssistantActivity.class);
+                popupWindow.dismiss();
+                break;
             case R.id.timeButton:
                 break;
             default:
@@ -823,26 +827,21 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
         final View keyword = popupView.findViewById(R.id.menuKeyword);
         final View hereAndNow = popupView.findViewById(R.id.menuHereAndNow);
         final View logout = popupView.findViewById(R.id.menuLogout);
+        final View voiceAssistant = popupView.findViewById(R.id.menuVoiceAssistant);
 
         search.setOnClickListener(this);
         keyword.setOnClickListener(this);
         hereAndNow.setOnClickListener(this);
         logout.setOnClickListener(this);
+        voiceAssistant.setOnClickListener(this);
         search.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    // 避免圆角被覆盖
-                    Drawable drawable = search.getBackground();
-                    if (drawable instanceof GradientDrawable) {
-                        ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.halfBlack));
-                    }
+                    search.setBackground(getDrawable(R.color.halfBlack));
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    Drawable drawable = search.getBackground();
-                    if (drawable instanceof GradientDrawable) {
-                        ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.bubbleBack));
-                    }
+                    search.setBackground(getDrawable(R.color.bubbleBack));
                 }
                 return false;
             }
@@ -893,6 +892,18 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                     if (drawable instanceof GradientDrawable) {
                         ((GradientDrawable) drawable).setColor(getResources().getColor(R.color.bubbleBack));
                     }
+                }
+                return false;
+            }
+        });
+        voiceAssistant.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    voiceAssistant.setBackground(getDrawable(R.color.halfBlack));
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    voiceAssistant.setBackground(getDrawable(R.color.bubbleBack));
                 }
                 return false;
             }

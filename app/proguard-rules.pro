@@ -127,3 +127,6 @@
 -keepclassmembers class * {
     void *(**On*Event);
 }
+
+# 对百度SDK，不能混淆
+-keep class com.baidu.speech.**{*;}
