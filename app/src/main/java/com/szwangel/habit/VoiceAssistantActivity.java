@@ -79,6 +79,16 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
     }
 
     @Override
+    protected void onDestroy() {
+        // 避免内存泄漏
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+            countDownTimer = null;
+        }
+        super.onDestroy();
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.close_assistant:
@@ -343,7 +353,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
          * @param countDownInterval The interval along the way to receive
          *                          {@link #onTick(long)} callbacks.
          */
-        public CountDownTimerUtils(TextView textView, long millisInFuture, long countDownInterval) {
+        CountDownTimerUtils(TextView textView, long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
             this.mTextView = textView;
         }

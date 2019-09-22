@@ -87,6 +87,16 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
     }
 
     @Override
+    protected void onDestroy() {
+        // 避免内存泄漏
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+            countDownTimer = null;
+        }
+        super.onDestroy();
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.getCode:
