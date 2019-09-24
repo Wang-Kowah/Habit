@@ -15,6 +15,7 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -43,8 +44,10 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
     Context mContext;
 
     View close;
-    TextView voiceText;
-    TextView voiceKeyword;
+    View voiceRefresh;
+    View voiceRecord;
+//    TextView voiceText;
+//    TextView voiceKeyword;
     TextView voiceCountDown;
     RecyclerView recyclerView;
 
@@ -60,6 +63,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
 
     String[] keywords;
     boolean permissionGranted;
+    boolean recording;
     int keywordNum = 2;
     int pageSize = 30;
     int pageNum = 1;
@@ -76,6 +80,12 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
         mContext = this;
 
         initView();
+        initListener();
+
+        // 进入就开始
+        recording = true;
+        voiceRecognition.start();
+        countDownTimer.start();
     }
 
     @Override
@@ -94,18 +104,23 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
             case R.id.close_assistant:
                 finish();
                 break;
-            case R.id.voiceText:
-                voiceRecognition.start();
+            case R.id.voiceRefresh:
+                recording = true;
+                voiceRecognition.stop();
+                countDownTimer.cancel();
                 countDownTimer.start();
-
-//                Toast.makeText(mContext, "start", Toast.LENGTH_SHORT).show();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        voiceRecognition.stop();
-//                        Toast.makeText(mContext, "stop", Toast.LENGTH_SHORT).show();
-                    }
-                }, 5000);
+                voiceRecognition.start();
+                break;
+            case R.id.voiceRecord:
+                if (recording) {
+                    voiceRecognition.stop();
+                    countDownTimer.cancel();
+                    voiceCountDown.setText("录音已暂停");
+                } else {
+                    voiceRecognition.start();
+                    countDownTimer.start();
+                }
+                switchRecordingStatus();
                 break;
         }
     }
@@ -120,11 +135,11 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
 
     void initView() {
         close = findViewById(R.id.close_assistant);
-        close.setOnClickListener(this);
+        voiceRefresh = findViewById(R.id.voiceRefresh);
+        voiceRecord = findViewById(R.id.voiceRecord);
         voiceCountDown = findViewById(R.id.voiceCountDown);
-        voiceKeyword = findViewById(R.id.voiceKeyword);
-        voiceText = findViewById(R.id.voiceText);
-        voiceText.setOnClickListener(this);
+//        voiceKeyword = findViewById(R.id.voiceKeyword);
+//        voiceText = findViewById(R.id.voiceText);
 
         dateList = new ArrayList<>();
         msgList = new ArrayList<>();
@@ -146,7 +161,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
         voiceRecognition = new VoiceRecognitionUtils(mContext, new VoiceRecognitionUtils.OnLineCallBack() {
             @Override
             public void onSuccess(String result) {
-                voiceText.setText(result);
+//                voiceText.setText(result);
 
                 call = retrofitService.extractKeyword(result, keywordNum);
                 call.enqueue(new Callback<ResponseBody>() {
@@ -166,22 +181,29 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
 
                                 keywords = jsonObject.getJSONArray("keywords").toArray(new String[0]);
                                 if (keywords.length != 0) {
-                                    StringBuilder stringBuilder = new StringBuilder();
+//                                    StringBuilder stringBuilder = new StringBuilder();
                                     for (String keyword : keywords) {
-                                        stringBuilder.append(keyword).append("，");
+//                                        stringBuilder.append(keyword).append("，");
                                         updateMsg(keyword);
                                     }
-                                    voiceKeyword.setText(stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString());
+//                                    voiceKeyword.setText(stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString());
 
-                                    if (msgList.isEmpty()) {
-                                        Toast toast = Toast.makeText(mContext, "没有搜索到相关的内容", Toast.LENGTH_LONG);
-                                        toast.setText("没有搜索到相关的内容");
-                                        toast.show();
-                                    } else {
-                                        adapter.removeDuplicateItem();
-                                    }
+                                    new Handler().postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (msgList.isEmpty()) {
+                                                Toast toast = Toast.makeText(mContext, "没有搜索到相关的内容", Toast.LENGTH_LONG);
+                                                toast.setText("没有搜索到相关的内容");
+                                                toast.show();
+                                            } else {
+                                                adapter.removeDuplicateItem();
+                                            }
+                                        }
+                                    }, 200);
                                 } else {
-                                    voiceKeyword.setText("未提取出关键词");
+                                    Toast toast = Toast.makeText(mContext, "未提取出关键词", Toast.LENGTH_LONG);
+                                    toast.setText("未提取出关键词");
+                                    toast.show();
                                 }
                             }
                         } catch (Exception e) {
@@ -201,6 +223,26 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
         });
 
         countDownTimer = new CountDownTimerUtils(voiceCountDown, 5000, 1000);
+    }
+
+    void initListener() {
+        close.setOnClickListener(this);
+        close.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    close.setBackground(getDrawable(R.color.colorText));
+                    close.setAlpha(0.3F);
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    close.setBackground(getDrawable(R.color.colorPrimary));
+                    close.setAlpha(1);
+                }
+                return false;
+            }
+        });
+        voiceRefresh.setOnClickListener(this);
+        voiceRecord.setOnClickListener(this);
     }
 
     void updateMsg(String key) {
@@ -251,6 +293,10 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
         return list;
     }
 
+    void switchRecordingStatus() {
+        recording = !recording;
+    }
+
     public class MsgAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private LayoutInflater mInflater;
         private List<Integer> dateList;
@@ -264,7 +310,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View itemView = mInflater.inflate(R.layout.item_search, parent, false);
+            View itemView = mInflater.inflate(R.layout.item_here_and_now, parent, false);
             return new MsgAdapter.ItemViewHolder(itemView);
         }
 
@@ -273,13 +319,13 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
             MsgAdapter.ItemViewHolder itemViewHolder = (MsgAdapter.ItemViewHolder) holder;
 
             long date = dateList.get(position) * 1000L;
-            itemViewHolder.searchDate.setText(DateUtils.formatDate(date));
+            itemViewHolder.hereAndNowDate.setText(DateUtils.formatDate(date, "yyyy年MM月dd日"));
 
             String msg = msgList.get(position);
-            itemViewHolder.searchMsg.setText(msg);
+            itemViewHolder.hereAndNowMsg.setText(msg);
 
             // 高亮搜索词
-            SpannableString spannableString = new SpannableString(itemViewHolder.searchMsg.getText().toString());
+            SpannableString spannableString = new SpannableString(itemViewHolder.hereAndNowMsg.getText().toString());
             for (String key : keywords) {
                 // 放在循环内部才能实现多处span
                 ForegroundColorSpan span = new ForegroundColorSpan(getColor(R.color.colorPrimary));
@@ -289,7 +335,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
                     spannableString.setSpan(span, start, start + key.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
                 }
             }
-            itemViewHolder.searchMsg.setText(spannableString);
+            itemViewHolder.hereAndNowMsg.setText(spannableString);
         }
 
         @Override
@@ -322,13 +368,13 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
         }
 
         class ItemViewHolder extends RecyclerView.ViewHolder {
-            private TextView searchDate;
-            private TextView searchMsg;
+            private TextView hereAndNowDate;
+            private TextView hereAndNowMsg;
 
             ItemViewHolder(View itemView) {
                 super(itemView);
-                searchDate = itemView.findViewById(R.id.searchDate);
-                searchMsg = itemView.findViewById(R.id.searchMsg);
+                hereAndNowDate = itemView.findViewById(R.id.hereAndNowDate);
+                hereAndNowMsg = itemView.findViewById(R.id.hereAndNowMsg);
                 initListener(itemView);
             }
 
@@ -361,10 +407,10 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
         @Override
         public void onTick(long millisUntilFinished) {
             //设置倒计时时间
-            mTextView.setText("录音倒计时：" + millisUntilFinished / 1000 + "秒");
+            mTextView.setText("录音中：" + (millisUntilFinished / 1000 + 1) + "s");
             SpannableString spannableString = new SpannableString(mTextView.getText().toString());
             ForegroundColorSpan span = new ForegroundColorSpan(getColor(R.color.colorPrimary));
-            spannableString.setSpan(span, 6, 7, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+            spannableString.setSpan(span, 4, 5, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
             mTextView.setText(spannableString);
         }
 

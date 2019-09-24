@@ -34,7 +34,7 @@
                     android:layout_height="match_parent"
                     android:layout_marginLeft="16dp"
                     android:layout_marginRight="18dp"
-                    android:src="@null" />
+                    android:src="@mipmap/logout" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -52,7 +52,7 @@
                 android:background="@color/white" />
 
             <LinearLayout
-                android:id="@+id/menuVoiceAssistant"
+                android:id="@+id/menuKeyword"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:orientation="horizontal">
@@ -62,14 +62,14 @@
                     android:layout_height="match_parent"
                     android:layout_marginLeft="16dp"
                     android:layout_marginRight="18dp"
-                    android:src="@null" />
+                    android:src="@mipmap/keyword" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
-                    android:text="交流助理"
+                    android:text="关键词"
                     android:textColor="@color/white"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -108,7 +108,7 @@
                 android:background="@color/white" />
 
             <LinearLayout
-                android:id="@+id/menuKeyword"
+                android:id="@+id/menuVoiceAssistant"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:orientation="horizontal">
@@ -118,14 +118,14 @@
                     android:layout_height="match_parent"
                     android:layout_marginLeft="16dp"
                     android:layout_marginRight="18dp"
-                    android:src="@mipmap/keyword" />
+                    android:src="@mipmap/assistant" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
-                    android:text="关键词"
+                    android:text="交流助理"
                     android:textColor="@color/white"
                     android:textSize="13sp" />
             </LinearLayout>
