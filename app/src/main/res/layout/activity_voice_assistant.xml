@@ -57,6 +57,7 @@
             android:orientation="horizontal">
 
             <ImageView
+                android:id="@+id/voiceRefreshImage"
                 android:layout_width="12dp"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="35dp"
@@ -64,13 +65,14 @@
                 android:src="@mipmap/refresh" />
 
             <TextView
+                android:id="@+id/voiceRefreshText"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
                 android:text="立刻刷新"
                 android:textColor="@color/black"
-                android:textSize="13sp" />
+                android:textSize="17sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -98,21 +100,9 @@
                 android:gravity="center_vertical"
                 android:text="录音已暂停"
                 android:textColor="@color/black"
-                android:textSize="13sp" />
+                android:textSize="17sp" />
         </LinearLayout>
     </RelativeLayout>
-
-    <!--<TextView-->
-        <!--android:id="@+id/voiceText"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="voiceText" />-->
-
-    <!--<TextView-->
-        <!--android:id="@+id/voiceKeyword"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="voiceKeyword" />-->
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/voiceRecyclerView"

@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,8 +46,8 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
     View close;
     View voiceRefresh;
     View voiceRecord;
-//    TextView voiceText;
-//    TextView voiceKeyword;
+    ImageView voiceRefreshImage;
+    TextView voiceRefreshText;
     TextView voiceCountDown;
     RecyclerView recyclerView;
 
@@ -64,9 +64,6 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
     String[] keywords;
     boolean permissionGranted;
     boolean recording;
-    int keywordNum = 2;
-    int pageSize = 30;
-    int pageNum = 1;
     int uid;
 
     @Override
@@ -116,9 +113,15 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
                     voiceRecognition.stop();
                     countDownTimer.cancel();
                     voiceCountDown.setText("录音已暂停");
+                    voiceRefresh.setClickable(false);
+                    voiceRefreshText.setTextColor(getColor(R.color.refreshDisable));
+                    voiceRefreshImage.setColorFilter(getColor(R.color.refreshDisable));
                 } else {
                     voiceRecognition.start();
                     countDownTimer.start();
+                    voiceRefresh.setClickable(true);
+                    voiceRefreshText.setTextColor(getColor(R.color.black));
+                    voiceRefreshImage.setColorFilter(getColor(R.color.black));
                 }
                 switchRecordingStatus();
                 break;
@@ -135,11 +138,11 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
 
     void initView() {
         close = findViewById(R.id.close_assistant);
+        voiceRefreshImage = findViewById(R.id.voiceRefreshImage);
+        voiceRefreshText = findViewById(R.id.voiceRefreshText);
         voiceRefresh = findViewById(R.id.voiceRefresh);
         voiceRecord = findViewById(R.id.voiceRecord);
         voiceCountDown = findViewById(R.id.voiceCountDown);
-//        voiceKeyword = findViewById(R.id.voiceKeyword);
-//        voiceText = findViewById(R.id.voiceText);
 
         dateList = new ArrayList<>();
         msgList = new ArrayList<>();
@@ -158,12 +161,11 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
                 .build()
                 .create(RetrofitService.class);
 
+        countDownTimer = new CountDownTimerUtils(voiceCountDown, 5000, 1000);
         voiceRecognition = new VoiceRecognitionUtils(mContext, new VoiceRecognitionUtils.OnLineCallBack() {
             @Override
             public void onSuccess(String result) {
-//                voiceText.setText(result);
-
-                call = retrofitService.extractKeyword(result, keywordNum);
+                call = retrofitService.extractVoiceText(uid, result);
                 call.enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -176,30 +178,15 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
                                 toast.setText(jsonObject.getString("msg"));
                                 toast.show();
                             } else {
-                                // 清除上一轮的搜索结果
-                                adapter.clearItem();
-
                                 keywords = jsonObject.getJSONArray("keywords").toArray(new String[0]);
                                 if (keywords.length != 0) {
-//                                    StringBuilder stringBuilder = new StringBuilder();
-                                    for (String keyword : keywords) {
-//                                        stringBuilder.append(keyword).append("，");
-                                        updateMsg(keyword);
+                                    if (jsonObject.getInteger("size").equals(0)) {
+                                        Toast toast = Toast.makeText(mContext, "没有搜索到相关的内容", Toast.LENGTH_LONG);
+                                        toast.setText("没有搜索到相关的内容");
+                                        toast.show();
+                                    } else {
+                                        updateMsg(jsonObject.getJSONArray("result"));
                                     }
-//                                    voiceKeyword.setText(stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString());
-
-                                    new Handler().postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (msgList.isEmpty()) {
-                                                Toast toast = Toast.makeText(mContext, "没有搜索到相关的内容", Toast.LENGTH_LONG);
-                                                toast.setText("没有搜索到相关的内容");
-                                                toast.show();
-                                            } else {
-                                                adapter.removeDuplicateItem();
-                                            }
-                                        }
-                                    }, 200);
                                 } else {
                                     Toast toast = Toast.makeText(mContext, "未提取出关键词", Toast.LENGTH_LONG);
                                     toast.setText("未提取出关键词");
@@ -221,8 +208,6 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
                 });
             }
         });
-
-        countDownTimer = new CountDownTimerUtils(voiceCountDown, 5000, 1000);
     }
 
     void initListener() {
@@ -245,44 +230,18 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
         voiceRecord.setOnClickListener(this);
     }
 
-    void updateMsg(String key) {
-        Call<ResponseBody> call = retrofitService.search(uid, key, pageNum, pageSize);
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                String json;
-                try {
-                    json = response.body().string();
-                    JSONObject jsonObject = JSONObject.parseObject(json);
-                    if (!jsonObject.getInteger("retcode").equals(0)) {
-                        Toast toast = Toast.makeText(mContext, jsonObject.getString("msg"), Toast.LENGTH_SHORT);
-                        toast.setText(jsonObject.getString("msg"));
-                        toast.show();
-                    } else {
-                        JSONObject result = jsonObject.getJSONObject("result");
-                        JSONArray jsonArray = result.getJSONArray("list");
-                        ArrayList<Integer> dates = new ArrayList<>();
-                        ArrayList<String> msgs = new ArrayList<>();
-                        for (int i = 0; i < jsonArray.size(); i++) {
-                            JSONObject object = jsonArray.getJSONObject(i);
-                            msgs.add(object.getString("content"));
-                            dates.add(object.getIntValue("createTime"));
-                        }
-                        adapter.addFooterItem(dates, msgs);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+    void updateMsg(JSONArray jsonArray) {
+        // 清除上一轮的搜索结果
+        adapter.clearItem();
 
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast toast = Toast.makeText(mContext, "网络异常，请稍后重试", Toast.LENGTH_SHORT);
-                toast.setText("网络异常，请稍后重试");
-                toast.show();
-                t.printStackTrace();
-            }
-        });
+        ArrayList<Integer> dates = new ArrayList<>();
+        ArrayList<String> msgs = new ArrayList<>();
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JSONObject object = jsonArray.getJSONObject(i);
+            msgs.add(object.getString("content"));
+            dates.add(object.getIntValue("createTime"));
+        }
+        adapter.addFooterItem(dates, msgs);
     }
 
     // list去重避免搜索结果重复

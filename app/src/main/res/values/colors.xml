@@ -11,4 +11,5 @@
     <color name="black">#000000</color>
     <color name="halfBlack">#8C000000</color>
     <color name="bubbleBack">#6E7374</color>
+    <color name="refreshDisable">#C5C5C5</color>
 </resources>
