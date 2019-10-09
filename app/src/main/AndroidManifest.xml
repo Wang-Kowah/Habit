@@ -21,7 +21,6 @@
         android:roundIcon="@mipmap/yuanjiao"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".VoiceAssistantActivity"></activity>
 
         <receiver
             android:name=".RingReceiver"
@@ -59,6 +58,9 @@
             android:windowSoftInputMode="stateVisible" />
         <activity
             android:name=".HereAndNowActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".VoiceAssistantActivity"
             android:screenOrientation="portrait" />
 
         <provider

@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -72,8 +73,10 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
         setContentView(R.layout.activity_voice_assistant);
-        //设置状态栏的颜色
+        // 设置状态栏的颜色
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary));
+        // 保持屏幕常亮
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mContext = this;
 
         initView();
@@ -161,7 +164,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
                 .build()
                 .create(RetrofitService.class);
 
-        countDownTimer = new CountDownTimerUtils(voiceCountDown, 5000, 1000);
+        countDownTimer = new CountDownTimerUtils(voiceCountDown, 7000, 1000);
         voiceRecognition = new VoiceRecognitionUtils(mContext, new VoiceRecognitionUtils.OnLineCallBack() {
             @Override
             public void onSuccess(String result) {
