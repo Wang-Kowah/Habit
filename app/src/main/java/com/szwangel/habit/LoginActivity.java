@@ -42,6 +42,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
     EditText code;
     Button button;
     TextView termsButton;
+    TextView termsButton2;
     TextView getCode;
     CountDownTimerUtils countDownTimer;
     RetrofitService retrofitService;
@@ -68,10 +69,12 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
         code = findViewById(R.id.code);
         button = findViewById(R.id.sign_in_button);
         termsButton = findViewById(R.id.termsbutton);
+        termsButton2 = findViewById(R.id.termsbutton2);
         getCode = findViewById(R.id.getCode);
 
         button.setOnClickListener(this);
         termsButton.setOnClickListener(this);
+        termsButton2.setOnClickListener(this);
         getCode.setOnClickListener(this);
 
         countDownTimer = new CountDownTimerUtils(getCode, 60000, 1000);
@@ -107,6 +110,9 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                 break;
             case R.id.termsbutton:
                 navigateTo(ProtocolActivity.class);
+                break;
+            case R.id.termsbutton2:
+                navigateTo(PrivacyActivity.class);
                 break;
             default:
                 break;

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PrivacyActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginLeft="-13dp"
+        android:background="@color/colorPrimary">
+
+        <LinearLayout
+            android:id="@+id/returnbutton3"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="5dp"
+                android:src="@mipmap/return_button" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="103dp"
+            android:text="隐私条款"
+            android:textColor="@color/white"
+            android:textSize="18sp" />
+
+    </android.support.v7.widget.Toolbar>
+
+    <WebView
+        android:id="@+id/privacy"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="48dp" />
+
+</RelativeLayout>
