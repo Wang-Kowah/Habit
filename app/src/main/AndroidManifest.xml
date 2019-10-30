@@ -21,7 +21,6 @@
         android:roundIcon="@mipmap/yuanjiao"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".PrivacyActivity"></activity>
 
         <receiver
             android:name=".RingReceiver"
@@ -62,6 +61,9 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".VoiceAssistantActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PrivacyActivity"
             android:screenOrientation="portrait" />
 
         <provider

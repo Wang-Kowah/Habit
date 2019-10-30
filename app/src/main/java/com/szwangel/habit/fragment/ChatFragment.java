@@ -820,14 +820,14 @@ public class ChatFragment extends Fragment {
             }
         });
 
-        //获取屏幕宽高
+        // 获取屏幕宽高
         int weight = getResources().getDisplayMetrics().widthPixels;
-        int height = getResources().getDisplayMetrics().heightPixels / 3;
+        int height = (int) (getResources().getDisplayMetrics().heightPixels * (240F / 2252F)) + 1;
 
         popupWindow = new PopupWindow(popupView, weight, height);
         popupWindow.setAnimationStyle(R.style.Animation_Design_BottomSheetDialog);
         popupWindow.setFocusable(true);
-        //点击外部popupWindow消失
+        // 点击外部popupWindow消失
         popupWindow.setOutsideTouchable(true);
         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
             @Override
@@ -845,14 +845,14 @@ public class ChatFragment extends Fragment {
         final RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) v.getLayoutParams();
         // 获取popupWindow高度
         lp.bottomMargin = popupWindow.getContentView().getMeasuredHeight();
-        // 与动画同步
+        // 与动画同步(可去掉)
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 v.setLayoutParams(lp);
                 recyclerView.scrollToPosition(0);
             }
-        }, 200);
+        }, 100);
     }
 
     // 确认权限
