@@ -845,14 +845,14 @@ public class ChatFragment extends Fragment {
         final RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) v.getLayoutParams();
         // 获取popupWindow高度
         lp.bottomMargin = popupWindow.getContentView().getMeasuredHeight();
-        // 与动画同步(可去掉)
+        // 与动画同步
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 v.setLayoutParams(lp);
                 recyclerView.scrollToPosition(0);
             }
-        }, 100);
+        }, 200);
     }
 
     // 确认权限

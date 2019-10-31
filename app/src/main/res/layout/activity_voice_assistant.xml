@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="31dp"
-                android:text="话题交流时浮现历史想法和总结"
+                android:text="(话题交流时浮现历史想法和总结)"
                 android:textColor="@color/colorText"
                 android:textSize="10sp" />
 
