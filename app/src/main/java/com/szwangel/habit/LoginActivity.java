@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
 import com.githang.statusbar.StatusBarCompat;
+import com.szwangel.habit.application.HabitApplication;
 import com.szwangel.habit.service.RetrofitService;
 import com.xiasuhuei321.loadingdialog.view.LoadingDialog;
 
@@ -79,7 +80,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
 
         countDownTimer = new CountDownTimerUtils(getCode, 60000, 1000);
 
-        MyApplication application = (MyApplication) getApplication();
+        HabitApplication application = (HabitApplication) getApplication();
         String domain = application.getDomain();
         retrofitService = new Retrofit.Builder()
                 .baseUrl(domain)

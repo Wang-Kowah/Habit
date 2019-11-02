@@ -53,9 +53,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.daasuu.bl.BubbleLayout;
-import com.szwangel.habit.MyApplication;
+import com.szwangel.habit.application.HabitApplication;
 import com.szwangel.habit.R;
-import com.szwangel.habit.RingReceiver;
+import com.szwangel.habit.receiver.RingReceiver;
 import com.szwangel.habit.service.RetrofitService;
 import com.szwangel.habit.utils.DateUtils;
 import com.szwangel.habit.utils.FileUtils;
@@ -277,7 +277,7 @@ public class ChatFragment extends Fragment {
         }
 
         uid = sharedPreferences.getInt("uid", -1);
-        MyApplication application = (MyApplication) getActivity().getApplication();
+        HabitApplication application = (HabitApplication) getActivity().getApplication();
         String domain = application.getDomain();
         retrofitService = new Retrofit.Builder()
                 .baseUrl(domain)
@@ -514,6 +514,8 @@ public class ChatFragment extends Fragment {
                         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
                             @Override
                             public void onDismiss() {
+                                // 对返回时的处理
+                                getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                             }
                         });
                         popupWindow.showAtLocation(popupView, Gravity.BOTTOM, 0, 0);

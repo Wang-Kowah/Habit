@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.githang.statusbar.StatusBarCompat;
+import com.szwangel.habit.application.HabitApplication;
 import com.szwangel.habit.service.RetrofitService;
 import com.szwangel.habit.utils.DateUtils;
 
@@ -73,7 +74,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         uid = sharedPreferences.getInt("uid", -1);
 
-        MyApplication application = (MyApplication) getApplication();
+        HabitApplication application = (HabitApplication) getApplication();
         String domain = application.getDomain();
         retrofitService = new Retrofit.Builder()
                 .baseUrl(domain)

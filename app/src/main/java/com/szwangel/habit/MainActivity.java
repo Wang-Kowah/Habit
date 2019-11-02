@@ -48,6 +48,7 @@ import android.widget.Toast;
 import com.alibaba.fastjson.JSONObject;
 import com.bumptech.glide.Glide;
 import com.githang.statusbar.StatusBarCompat;
+import com.szwangel.habit.application.HabitApplication;
 import com.szwangel.habit.fragment.ChatFragment;
 import com.szwangel.habit.fragment.ReviewFragment;
 import com.szwangel.habit.service.RetrofitService;
@@ -170,7 +171,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
                 }
             }
 
-            MyApplication application = (MyApplication) getApplication();
+            HabitApplication application = (HabitApplication) getApplication();
             String domain = application.getDomain();
             retrofitService = new Retrofit.Builder()
                     .baseUrl(domain)

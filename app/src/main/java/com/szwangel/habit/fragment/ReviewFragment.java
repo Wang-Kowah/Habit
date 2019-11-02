@@ -13,7 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.szwangel.habit.R;
-import com.szwangel.habit.RingReceiver;
+import com.szwangel.habit.receiver.RingReceiver;
 
 import java.util.ArrayList;
 import java.util.Calendar;
