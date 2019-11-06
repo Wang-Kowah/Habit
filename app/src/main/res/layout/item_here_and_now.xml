@@ -19,16 +19,26 @@
                 android:layout_width="280dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:layout_marginBottom="5dp"
                 android:gravity="start|top"
                 android:text="搜索结果搜索结果搜索结果搜索结果搜索结果搜索结果搜索结果搜索结果搜索结果搜索结果"
                 android:textColor="@color/colorText"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/hereAndNowPic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_marginLeft="40dp"
+                android:layout_marginTop="16dp"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/hereAndNowDate"
                 android:layout_width="280dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
                 android:layout_marginBottom="13dp"
                 android:gravity="right"
                 android:text="关键词"
