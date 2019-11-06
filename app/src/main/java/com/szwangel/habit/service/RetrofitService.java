@@ -67,7 +67,7 @@ public interface RetrofitService {
 
     @FormUrlEncoded
     @POST("user/hereAndNow")
-    Call<ResponseBody> hereAndNow(@Field("uid") int uid, @Field("lat") BigDecimal lat, @Field("lng") BigDecimal lng);
+    Call<ResponseBody> hereAndNow(@Field("uid") int uid, @Field("lat") BigDecimal lat, @Field("lng") BigDecimal lng, @Field("pic") boolean pic);
 
     @FormUrlEncoded
     @POST("user/extractVoiceText")
