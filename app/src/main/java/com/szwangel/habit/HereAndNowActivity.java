@@ -406,7 +406,7 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        System.out.println("touching " + getAdapterPosition());
+//                        System.out.println("touching " + getAdapterPosition());
                     }
                 });
             }

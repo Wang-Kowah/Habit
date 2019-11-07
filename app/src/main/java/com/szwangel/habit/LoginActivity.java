@@ -183,7 +183,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    System.out.println("fail, " + t.getMessage());
+//                    System.out.println("fail, " + t.getMessage());
                 }
             });
             countDownTimer.start();

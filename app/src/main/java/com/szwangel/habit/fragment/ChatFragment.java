@@ -198,7 +198,7 @@ public class ChatFragment extends Fragment {
             });
 
             currentTab = 0;
-            System.out.println("day fragment created");
+//            System.out.println("day fragment created");
         } else {
 //            final TextView dateTextView = view.findViewById(R.id.dateText);
 //            dateTextView.setText(sharedPreferences.getString("dayInWeek", "六"));
@@ -273,7 +273,7 @@ public class ChatFragment extends Fragment {
             });
 
             currentTab = 2;
-            System.out.println("week fragment created");
+//            System.out.println("week fragment created");
         }
 
         uid = sharedPreferences.getInt("uid", -1);

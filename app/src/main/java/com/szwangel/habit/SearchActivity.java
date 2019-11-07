@@ -331,7 +331,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        System.out.println("touching " + getAdapterPosition());
+//                        System.out.println("touching " + getAdapterPosition());
                     }
                 });
             }

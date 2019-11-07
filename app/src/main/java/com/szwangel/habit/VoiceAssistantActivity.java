@@ -285,6 +285,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
             itemViewHolder.hereAndNowDate.setText(DateUtils.formatDate(date, "yyyy年MM月dd日"));
 
             String msg = msgList.get(position);
+            itemViewHolder.hereAndNowMsg.setVisibility(View.VISIBLE);
             itemViewHolder.hereAndNowMsg.setText(msg);
 
             // 高亮搜索词
@@ -345,7 +346,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        System.out.println("touching " + getAdapterPosition());
+//                        System.out.println("touching " + getAdapterPosition());
                     }
                 });
             }

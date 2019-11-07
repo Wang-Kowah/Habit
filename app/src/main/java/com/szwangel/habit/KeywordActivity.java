@@ -360,7 +360,7 @@ public class KeywordActivity extends AppCompatActivity implements View.OnClickLi
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        System.out.println("touching " + getAdapterPosition());
+//                        System.out.println("touching " + getAdapterPosition());
                     }
                 });
             }
