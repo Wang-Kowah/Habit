@@ -287,7 +287,7 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    public class MsgAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.ViewHolder> {
         private LayoutInflater mInflater;
         private List<Integer> dateList;
         private List<String> msgList;
@@ -299,26 +299,22 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
         }
 
         @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View itemView = mInflater.inflate(R.layout.item_here_and_now, parent, false);
-            return new MsgAdapter.ItemViewHolder(itemView);
+            return new ViewHolder(itemView);
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
-
-            long date = dateList.get(position) * 1000L;
-            itemViewHolder.hereAndNowDate.setText(DateUtils.formatDate(date, "yyyy年MM月dd日"));
+        public void onBindViewHolder(ViewHolder holder, int position) {
 
             final String msg = msgList.get(position);
             if (!msg.startsWith("_PIC:")) {
-                itemViewHolder.hereAndNowMsg.setVisibility(View.VISIBLE);
-                itemViewHolder.hereAndNowMsg.setText(msg);
+                holder.hereAndNowMsg.setVisibility(View.VISIBLE);
+                holder.hereAndNowMsg.setText(msg);
             } else {
-                itemViewHolder.hereAndNowPic.setVisibility(View.VISIBLE);
-                loadPic(msg, itemViewHolder.hereAndNowPic);
-                itemViewHolder.hereAndNowPic.setOnClickListener(new View.OnClickListener() {
+                holder.hereAndNowPic.setVisibility(View.VISIBLE);
+                loadPic(msg, holder.hereAndNowPic);
+                holder.hereAndNowPic.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         View popupView = View.inflate(mContext, R.layout.popupwindow_preview_image, null);
@@ -370,6 +366,23 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
                     }
                 });
             }
+
+            long date = dateList.get(position) * 1000L;
+            holder.hereAndNowDate.setText(DateUtils.formatDate(date, "yyyy年MM月dd日"));
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return position;
+        }
+
+        @Override
+        public void onViewRecycled(@NonNull ViewHolder holder) {
+            // 清理glide避免RecyclerView回收复用出现图片文字混合
+            if (holder.hereAndNowPic != null) {
+                Glide.with(mContext).clear(holder.hereAndNowPic);
+            }
+            super.onViewRecycled(holder);
         }
 
         @Override
@@ -389,12 +402,12 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
             notifyDataSetChanged();
         }
 
-        class ItemViewHolder extends RecyclerView.ViewHolder {
+        class ViewHolder extends RecyclerView.ViewHolder {
             private TextView hereAndNowDate;
             private TextView hereAndNowMsg;
             private ImageView hereAndNowPic;
 
-            ItemViewHolder(View itemView) {
+            ViewHolder(View itemView) {
                 super(itemView);
                 hereAndNowDate = itemView.findViewById(R.id.hereAndNowDate);
                 hereAndNowMsg = itemView.findViewById(R.id.hereAndNowMsg);

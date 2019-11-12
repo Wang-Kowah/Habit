@@ -574,6 +574,7 @@ public class ChatFragment extends Fragment {
 
         @Override
         public void onViewRecycled(@NonNull ViewHolder holder) {
+            // 清理glide避免RecyclerView回收复用出现图片文字混合
             if (holder.pic != null) {
                 Glide.with(context).clear(holder.pic);
             }
