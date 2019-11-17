@@ -383,6 +383,7 @@ public class ChatFragment extends Fragment {
         linearLayoutManager.setReverseLayout(true);
         linearLayoutManager.setStackFromEnd(true);
         adapter = new MsgAdapter(getContext(), msgList, dateList);
+        adapter.setHasStableIds(true);
         recyclerView = view.findViewById(R.id.chatRecyclerView);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(adapter);
@@ -470,7 +471,10 @@ public class ChatFragment extends Fragment {
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(context).inflate(R.layout.item_chat, parent, false);
-            return new ViewHolder(view);
+            ViewHolder viewHolder = new ViewHolder(view);
+            // 割以永治
+            viewHolder.setIsRecyclable(false);
+            return viewHolder;
         }
 
         @Override
@@ -573,11 +577,18 @@ public class ChatFragment extends Fragment {
         }
 
         @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
         public void onViewRecycled(@NonNull ViewHolder holder) {
             // 清理glide避免RecyclerView回收复用出现图片文字混合
             if (holder.pic != null) {
                 Glide.with(context).clear(holder.pic);
             }
+            holder.msg.setVisibility(View.GONE);
+            holder.pic.setVisibility(View.GONE);
             super.onViewRecycled(holder);
         }
 

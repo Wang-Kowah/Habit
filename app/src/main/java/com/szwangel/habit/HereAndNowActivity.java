@@ -382,6 +382,8 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
             if (holder.hereAndNowPic != null) {
                 Glide.with(mContext).clear(holder.hereAndNowPic);
             }
+            holder.hereAndNowMsg.setVisibility(View.GONE);
+            holder.hereAndNowPic.setVisibility(View.GONE);
             super.onViewRecycled(holder);
         }
 
