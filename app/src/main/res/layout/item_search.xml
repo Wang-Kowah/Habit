@@ -22,13 +22,23 @@
                 android:gravity="start|top"
                 android:text="搜索结果搜索结果搜索结果搜索结果搜索结果搜索结果搜索结果搜索结果搜索结果搜索结果"
                 android:textColor="@color/colorText"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/searchPic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_marginLeft="14dp"
+                android:layout_marginTop="16dp"
+                android:src="@mipmap/logout"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/searchDate"
                 android:layout_width="338dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
                 android:layout_marginBottom="13dp"
                 android:gravity="right"
                 android:text="关键词"

@@ -56,7 +56,7 @@ public interface RetrofitService {
 
     @FormUrlEncoded
     @POST("user/search")
-    Call<ResponseBody> search(@Field("uid") int uid, @Field("key") String key, @Field("pageNum") int pageNum, @Field("pageSize") int pageSize);
+    Call<ResponseBody> search(@Field("uid") int uid, @Field("key") String key, @Field("pic") boolean pic, @Field("pageNum") int pageNum, @Field("pageSize") int pageSize);
 
     @Multipart
     @POST("user/sendPic")

@@ -2,9 +2,12 @@ package com.szwangel.habit;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,24 +16,33 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.githang.statusbar.StatusBarCompat;
 import com.szwangel.habit.application.HabitApplication;
 import com.szwangel.habit.service.RetrofitService;
 import com.szwangel.habit.utils.DateUtils;
+import com.szwangel.habit.utils.FileUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +57,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     EditText searchText;
     View cancel;
     RecyclerView recyclerView;
+    PopupWindow popupWindow;
     RefreshAdapter adapter;
 
     SharedPreferences sharedPreferences;
@@ -57,6 +70,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     int pageNum;
     int uid;
     String key;
+    boolean acceptPic = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,7 +155,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE
                         || (event != null && KeyEvent.KEYCODE_ENTER == event.getKeyCode() && KeyEvent.ACTION_DOWN == event.getAction())) {
-                    key = v.getText().toString();
+                    key = v.getText().toString().trim();
                     if (TextUtils.isEmpty(key)) {
                         Toast.makeText(mContext, "您还未输入要搜索的内容", Toast.LENGTH_LONG).show();
                     } else {
@@ -169,7 +183,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     void updateMsg() {
-        Call<ResponseBody> call = retrofitService.search(uid, key, pageNum++, pageSize);
+        Call<ResponseBody> call = retrofitService.search(uid, key, acceptPic, pageNum++, pageSize);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -267,16 +281,73 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 long date = dateList.get(position) * 1000L;
                 itemViewHolder.searchDate.setText(DateUtils.formatDate(date, "yyyy年MM月dd日"));
 
-                String msg = msgList.get(position);
-                itemViewHolder.searchMsg.setText(msg);
+                final String msg = msgList.get(position);
+                if (!msg.startsWith("_PIC:")) {
+                    itemViewHolder.searchMsg.setVisibility(View.VISIBLE);
+                    itemViewHolder.searchMsg.setText(msg);
 
-                // 高亮搜索词
-                SpannableString spannableString = new SpannableString(itemViewHolder.searchMsg.getText().toString());
-                ForegroundColorSpan span = new ForegroundColorSpan(getColor(R.color.colorPrimary));
-                // 避免大小写不一致导致找不到key的位置
-                int start = msg.toLowerCase().indexOf(key.toLowerCase());
-                spannableString.setSpan(span, start, start+ key.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-                itemViewHolder.searchMsg.setText(spannableString);
+                    // 高亮搜索词
+                    SpannableString spannableString = new SpannableString(itemViewHolder.searchMsg.getText().toString());
+                    ForegroundColorSpan span = new ForegroundColorSpan(getColor(R.color.colorPrimary));
+                    // 避免大小写不一致导致找不到key的位置
+                    int start = msg.toLowerCase().indexOf(key.toLowerCase());
+                    spannableString.setSpan(span, start, start + key.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                    itemViewHolder.searchMsg.setText(spannableString);
+                } else {
+                    itemViewHolder.searchPic.setVisibility(View.VISIBLE);
+                    loadPic(msg, itemViewHolder.searchPic);
+                    itemViewHolder.searchPic.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            View popupView = View.inflate(mContext, R.layout.popupwindow_preview_image, null);
+                            ImageView preview = popupView.findViewById(R.id.preview_image);
+
+                            popupView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    // 显示状态栏，防止画面抖动
+                                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                                    new Handler().postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            popupWindow.dismiss();
+                                        }
+                                    }, 80);
+                                }
+                            });
+
+                            popupWindow = new PopupWindow(popupView,
+                                    WindowManager.LayoutParams.MATCH_PARENT,
+                                    WindowManager.LayoutParams.MATCH_PARENT,
+                                    true);
+                            popupWindow.setAnimationStyle(R.style.AppTheme);
+                            popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                                @Override
+                                public void onDismiss() {
+                                    // 对返回时的处理
+                                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                                }
+                            });
+                            popupWindow.showAtLocation(popupView, Gravity.BOTTOM, 0, 0);
+                            // 隐藏状态栏，防止画面抖动
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                                }
+                            }, 50);
+
+                            String picPath = FileUtils.dirPath + msg.replace("_PIC:" + uid, "");
+                            File pic = new File(picPath);
+                            if (pic.exists()) {
+                                Glide.with(mContext)
+                                        .load(pic)
+                                        .centerInside()
+                                        .into(preview);
+                            }
+                        }
+                    });
+                }
             } else if (holder instanceof RefreshAdapter.FooterViewHolder) {
                 footerViewHolder = (RefreshAdapter.FooterViewHolder) holder;
             }
@@ -296,6 +367,19 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             } else {
                 return TYPE_ITEM;
             }
+        }
+
+        @Override
+        public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
+            if (holder instanceof RefreshAdapter.ItemViewHolder) {
+                // 清理glide避免RecyclerView回收复用出现图片文字混合
+                if (((ItemViewHolder) holder).searchPic != null) {
+                    Glide.with(mContext).clear(((ItemViewHolder) holder).searchPic);
+                }
+                ((ItemViewHolder) holder).searchMsg.setVisibility(View.GONE);
+                ((ItemViewHolder) holder).searchPic.setVisibility(View.GONE);
+            }
+            super.onViewRecycled(holder);
         }
 
         void AddHeaderItem(List<Integer> dates, List<String> keys) {
@@ -319,11 +403,13 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         class ItemViewHolder extends RecyclerView.ViewHolder {
             private TextView searchDate;
             private TextView searchMsg;
+            private ImageView searchPic;
 
             ItemViewHolder(View itemView) {
                 super(itemView);
                 searchDate = itemView.findViewById(R.id.searchDate);
                 searchMsg = itemView.findViewById(R.id.searchMsg);
+                searchPic = itemView.findViewById(R.id.searchPic);
                 initListener(itemView);
             }
 
@@ -352,4 +438,85 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    // 加载图片
+    private void loadPic(String picName, final ImageView picItem) {
+        // 这句放到限制宽高后面会导致限制失效。。原因未知
+        String picPath = FileUtils.dirPath + picName.replace("_PIC:" + uid, "");
+        // 获取屏幕宽度来确定ImageView的最大宽高
+        int maxPixels = getResources().getDisplayMetrics().widthPixels * 5 / 9;
+        // 限制ImageView的最大宽高
+        int picWidth = getImageWidthHeight(picPath)[0];
+        int picHeight = getImageWidthHeight(picPath)[1];
+        if (picWidth >= picHeight && picWidth > maxPixels) {
+            ViewGroup.LayoutParams layoutParams = picItem.getLayoutParams();
+            layoutParams.width = maxPixels;
+            picItem.setLayoutParams(layoutParams);
+        }
+        if (picWidth < picHeight && picHeight > maxPixels) {
+            ViewGroup.LayoutParams layoutParams = picItem.getLayoutParams();
+            layoutParams.height = maxPixels;
+            picItem.setLayoutParams(layoutParams);
+        }
+
+        final RequestOptions options = RequestOptions.bitmapTransform(new RoundedCorners(15));
+        File pic = new File(picPath);
+        if (pic.exists()) {
+            Glide.with(this)
+                    .load(pic)
+                    .centerInside()
+                    .apply(options)
+                    .into(picItem);
+        } else {
+            Call<ResponseBody> responseBodyCall = retrofitService.pic(picName);
+
+            responseBodyCall.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
+                    String fileName = response.raw().headers().get("Content-Disposition");
+                    if (fileName != null && fileName.contains("fileName=")) {
+                        fileName = fileName.substring(fileName.indexOf("=") + 1).replace("_PIC:" + uid + "/", "");
+
+                        //建立一个文件
+                        final File file = FileUtils.createFile(mContext, fileName);
+                        if (file.length() == 0) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    FileUtils.writeFile2Disk(response, file);
+                                    if (file.exists()) {
+                                        Glide.with(mContext)
+                                                .load(file)
+                                                .centerInside()
+                                                .apply(options)
+                                                .into(picItem);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    t.printStackTrace();
+                }
+            });
+        }
+    }
+
+    // 获取图片宽高
+    public static int[] getImageWidthHeight(String path) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+
+        /**
+         * 最关键在此，把options.inJustDecodeBounds = true;
+         * 这里再decodeFile()，返回的bitmap为空，但此时调用options.outHeight时，已经包含了图片的高了
+         */
+        options.inJustDecodeBounds = true;
+        Bitmap bitmap = BitmapFactory.decodeFile(path, options); // 此时返回的bitmap为null
+        /**
+         *options.outHeight为原始图片的高
+         */
+        return new int[]{options.outWidth, options.outHeight};
+    }
 }
