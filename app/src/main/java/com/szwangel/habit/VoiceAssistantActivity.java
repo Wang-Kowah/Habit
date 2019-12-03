@@ -109,6 +109,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
             case R.id.voiceRefresh:
                 recording = true;
                 voiceRecognition.stop();
+                process();
                 countDownTimer.cancel();
                 countDownTimer.start();
                 voiceRecognition.start();
@@ -194,6 +195,49 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
         voiceRefresh.setOnClickListener(this);
         voiceRecord.setOnClickListener(this);
     }
+
+    void process(){
+        call = retrofitService.extractVoiceText(uid, finalResult);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                String json;
+                try {
+                    json = response.body().string();
+                    JSONObject jsonObject = JSONObject.parseObject(json);
+                    if (!jsonObject.getInteger("retcode").equals(0)) {
+                        Toast toast = Toast.makeText(mContext, jsonObject.getString("msg"), Toast.LENGTH_SHORT);
+                        toast.setText(jsonObject.getString("msg"));
+                        toast.show();
+                    } else {
+                        keywords = jsonObject.getJSONArray("keywords").toArray(new String[0]);
+                        if (keywords.length != 0) {
+                            if (jsonObject.getInteger("size").equals(0)) {
+                                Toast toast = Toast.makeText(mContext, "没有搜索到相关的内容", Toast.LENGTH_LONG);
+                                toast.setText("没有搜索到相关的内容");
+                                toast.show();
+                            } else {
+                                updateMsg(jsonObject.getJSONArray("result"));
+                            }
+                        } else {
+                            Toast toast = Toast.makeText(mContext, "未提取出关键词", Toast.LENGTH_LONG);
+                            toast.setText("未提取出关键词");
+                            toast.show();
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast toast = Toast.makeText(mContext, "网络异常，请稍后重试", Toast.LENGTH_SHORT);
+                toast.setText("网络异常，请稍后重试");
+                toast.show();
+                t.printStackTrace();
+            }
+        });}
 
     void updateMsg(JSONArray jsonArray) {
         // 清除上一轮的搜索结果
@@ -342,47 +386,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements OnClick
         @Override
         public void onFinish() {
             voiceRecognition.stop();
-            call = retrofitService.extractVoiceText(uid, finalResult);
-            call.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    String json;
-                    try {
-                        json = response.body().string();
-                        JSONObject jsonObject = JSONObject.parseObject(json);
-                        if (!jsonObject.getInteger("retcode").equals(0)) {
-                            Toast toast = Toast.makeText(mContext, jsonObject.getString("msg"), Toast.LENGTH_SHORT);
-                            toast.setText(jsonObject.getString("msg"));
-                            toast.show();
-                        } else {
-                            keywords = jsonObject.getJSONArray("keywords").toArray(new String[0]);
-                            if (keywords.length != 0) {
-                                if (jsonObject.getInteger("size").equals(0)) {
-                                    Toast toast = Toast.makeText(mContext, "没有搜索到相关的内容", Toast.LENGTH_LONG);
-                                    toast.setText("没有搜索到相关的内容");
-                                    toast.show();
-                                } else {
-                                    updateMsg(jsonObject.getJSONArray("result"));
-                                }
-                            } else {
-                                Toast toast = Toast.makeText(mContext, "未提取出关键词", Toast.LENGTH_LONG);
-                                toast.setText("未提取出关键词");
-                                toast.show();
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Toast toast = Toast.makeText(mContext, "网络异常，请稍后重试", Toast.LENGTH_SHORT);
-                    toast.setText("网络异常，请稍后重试");
-                    toast.show();
-                    t.printStackTrace();
-                }
-            });
+            process();
             this.start();
             voiceRecognition.start();
         }
