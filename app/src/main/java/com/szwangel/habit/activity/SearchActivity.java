@@ -1,4 +1,4 @@
-package com.szwangel.habit;
+package com.szwangel.habit.activity;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -37,6 +37,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.githang.statusbar.StatusBarCompat;
+import com.szwangel.habit.R;
 import com.szwangel.habit.application.HabitApplication;
 import com.szwangel.habit.service.RetrofitService;
 import com.szwangel.habit.utils.DateUtils;
@@ -284,10 +285,9 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 final String msg = msgList.get(position);
                 if (!msg.startsWith("_PIC:")) {
                     itemViewHolder.searchMsg.setVisibility(View.VISIBLE);
-                    itemViewHolder.searchMsg.setText(msg);
 
                     // 高亮搜索词
-                    SpannableString spannableString = new SpannableString(itemViewHolder.searchMsg.getText().toString());
+                    SpannableString spannableString = new SpannableString(msg);
                     ForegroundColorSpan span = new ForegroundColorSpan(getColor(R.color.colorPrimary));
                     // 避免大小写不一致导致找不到key的位置
                     int start = msg.toLowerCase().indexOf(key.toLowerCase());

@@ -1,4 +1,4 @@
-package com.szwangel.habit;
+package com.szwangel.habit.activity;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.githang.statusbar.StatusBarCompat;
+import com.szwangel.habit.R;
 import com.szwangel.habit.application.HabitApplication;
 import com.szwangel.habit.service.RetrofitService;
 import com.szwangel.habit.utils.DateUtils;

@@ -1,4 +1,4 @@
-package com.szwangel.habit;
+package com.szwangel.habit.activity;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -9,19 +9,20 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import com.githang.statusbar.StatusBarCompat;
+import com.szwangel.habit.R;
 
-public class PrivacyActivity extends AppCompatActivity {
+public class ProtocolActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
-        setContentView(R.layout.activity_privacy);
+        setContentView(R.layout.activity_protocol);
         //设置状态栏的颜色
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary));
 
-        final View imageView = findViewById(R.id.returnbutton3);
+        final View imageView = findViewById(R.id.returnbutton2);
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -43,8 +44,8 @@ public class PrivacyActivity extends AppCompatActivity {
             }
         });
 
-        WebView terms = findViewById(R.id.privacy);
-        terms.loadUrl("file:///android_asset/privacy.html");
+        WebView terms = findViewById(R.id.protocol);
+        terms.loadUrl("file:///android_asset/protocol.html");
         WebSettings webSettings = terms.getSettings();
         webSettings.setJavaScriptEnabled(false);
         webSettings.setDisplayZoomControls(false);

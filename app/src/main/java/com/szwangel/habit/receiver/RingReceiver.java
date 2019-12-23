@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.szwangel.habit.MainActivity;
+import com.szwangel.habit.activity.MainActivity;
 
 public class RingReceiver extends BroadcastReceiver {
 

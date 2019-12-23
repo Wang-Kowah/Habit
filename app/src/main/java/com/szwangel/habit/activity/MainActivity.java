@@ -1,4 +1,4 @@
-package com.szwangel.habit;
+package com.szwangel.habit.activity;
 
 import android.Manifest;
 import android.content.Context;
@@ -48,6 +48,7 @@ import android.widget.Toast;
 import com.alibaba.fastjson.JSONObject;
 import com.bumptech.glide.Glide;
 import com.githang.statusbar.StatusBarCompat;
+import com.szwangel.habit.R;
 import com.szwangel.habit.application.HabitApplication;
 import com.szwangel.habit.fragment.ChatFragment;
 import com.szwangel.habit.fragment.ReviewFragment;

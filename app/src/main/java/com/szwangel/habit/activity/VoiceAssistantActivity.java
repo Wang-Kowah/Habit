@@ -1,27 +1,21 @@
-package com.szwangel.habit;
+package com.szwangel.habit.activity;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -39,15 +33,16 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.githang.statusbar.StatusBarCompat;
+import com.szwangel.habit.R;
 import com.szwangel.habit.application.HabitApplication;
 import com.szwangel.habit.service.RetrofitService;
 import com.szwangel.habit.utils.DateUtils;
 import com.szwangel.habit.utils.FileUtils;
-import com.szwangel.habit.utils.LocationUtils;
+import com.szwangel.habit.utils.VoiceRecognitionUtils;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import okhttp3.ResponseBody;
@@ -56,27 +51,35 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class HereAndNowActivity extends AppCompatActivity implements View.OnClickListener {
+import static android.view.View.OnClickListener;
 
-    private Context mContext;
-
-    SharedPreferences sharedPreferences;
-    RetrofitService retrofitService;
+public class VoiceAssistantActivity extends AppCompatActivity implements OnClickListener {
+    Context mContext;
 
     View close;
-    AlertDialog.Builder alertDialog;
+    View voiceRefresh;
+    View voiceRecord;
+    ImageView voiceRefreshImage;
+    TextView voiceRefreshText;
+    TextView voiceCountDown;
     RecyclerView recyclerView;
-    TextView textView;
     PopupWindow popupWindow;
+
+    CountDownTimer countDownTimer;
+    VoiceRecognitionUtils voiceRecognition;
+    SharedPreferences sharedPreferences;
+    RetrofitService retrofitService;
+    Call<ResponseBody> call;
     MsgAdapter adapter;
 
     ArrayList<Integer> dateList;
     ArrayList<String> msgList;
 
+    String finalResult;
+    String[] keywords;
     boolean permissionGranted;
+    boolean recording;
     boolean acceptPic = true;
-    BigDecimal lat;
-    BigDecimal lng;
     int uid;
 
     @Override
@@ -84,14 +87,88 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
         super.onCreate(savedInstanceState);
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
-        setContentView(R.layout.activity_here_and_now);
-        //设置状态栏的颜色
+        setContentView(R.layout.activity_voice_assistant);
+        // 设置状态栏的颜色
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.colorPrimary));
+        // 保持屏幕常亮
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mContext = this;
 
         initView();
         initListener();
-        initPermission();
+
+        // 进入就开始
+        recording = true;
+        voiceRecognition.start();
+        countDownTimer.start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        // 避免内存泄漏
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+            countDownTimer = null;
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.close_assistant:
+                finish();
+                break;
+            case R.id.voiceRefresh:
+                recording = true;
+                voiceRecognition.stop();
+                process();
+                countDownTimer.cancel();
+                countDownTimer.start();
+                voiceRecognition.start();
+                break;
+            case R.id.voiceRecord:
+                if (recording) {
+                    voiceRecognition.stop();
+                    countDownTimer.cancel();
+                    voiceCountDown.setText("录音已暂停");
+                    voiceRefresh.setClickable(false);
+                    voiceRefreshText.setTextColor(getColor(R.color.refreshDisable));
+                    voiceRefreshImage.setColorFilter(getColor(R.color.refreshDisable));
+                } else {
+                    voiceRecognition.start();
+                    countDownTimer.start();
+                    voiceRefresh.setClickable(true);
+                    voiceRefreshText.setTextColor(getColor(R.color.black));
+                    voiceRefreshImage.setColorFilter(getColor(R.color.black));
+                }
+                switchRecordingStatus();
+                break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 369) {
+            permissionGranted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    void initView() {
+        close = findViewById(R.id.close_assistant);
+        voiceRefreshImage = findViewById(R.id.voiceRefreshImage);
+        voiceRefreshText = findViewById(R.id.voiceRefreshText);
+        voiceRefresh = findViewById(R.id.voiceRefresh);
+        voiceRecord = findViewById(R.id.voiceRecord);
+        voiceCountDown = findViewById(R.id.voiceCountDown);
+
+        dateList = new ArrayList<>();
+        msgList = new ArrayList<>();
+        adapter = new MsgAdapter(this, dateList, msgList);
+        recyclerView = findViewById(R.id.voiceRecyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+        recyclerView.setAdapter(adapter);
 
         sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         uid = sharedPreferences.getInt("uid", -1);
@@ -103,60 +180,16 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
                 .build()
                 .create(RetrofitService.class);
 
-        updateMsg();
+        countDownTimer = new CountDownTimerUtils(voiceCountDown, 7000, 1000);
+        voiceRecognition = new VoiceRecognitionUtils(mContext, new VoiceRecognitionUtils.OnLineCallBack() {
+            @Override
+            public void onSuccess(String result) {
+                finalResult = result;
+            }
+        });
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.close_hereandnow:
-                finish();
-                break;
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == 777) {
-            permissionGranted = grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED;
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    private void initView() {
-        close = findViewById(R.id.close_hereandnow);
-        textView = findViewById(R.id.hereAndNowTextView);
-
-        dateList = new ArrayList<>();
-        msgList = new ArrayList<>();
-        adapter = new MsgAdapter(this, dateList, msgList);
-        recyclerView = findViewById(R.id.hereAndNowRecyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
-
-        alertDialog = new android.support.v7.app.AlertDialog.Builder(mContext)
-                .setTitle("定位失败")
-                .setMessage("本功能基于当前时间与地点来展示您过去在此时此地发送过的帖子，需要开启定位才能正常使用")
-                .setPositiveButton("重新加载", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        recreate();
-                    }
-                })
-                .setNegativeButton("手动开启", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (permissionGranted) {
-                            openLocationSetting();
-                        } else {
-                            initPermission();
-                        }
-                    }
-                })
-                .setCancelable(false);
-    }
-
-    private void initListener() {
+    void initListener() {
         close.setOnClickListener(this);
         close.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -172,119 +205,78 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
                 return false;
             }
         });
+        voiceRefresh.setOnClickListener(this);
+        voiceRecord.setOnClickListener(this);
     }
 
-    private void initPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            //检查权限
-            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    || ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                //请求权限
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 777);
-            } else {
-                permissionGranted = true;
-            }
-        } else {
-            permissionGranted = true;
-        }
-    }
-
-    void updateMsg() {
-        if (permissionGranted) {
-            getGPSLocation();
-            getBestLocation();
-        } else {
-            alertDialog.show();
-        }
-
-        if (lat != null && lng != null) {
-            Call<ResponseBody> call = retrofitService.hereAndNow(uid, lat, lng, acceptPic);
-            call.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    String json;
-                    try {
-                        json = response.body().string();
-                        JSONObject jsonObject = JSONObject.parseObject(json);
-                        if (!jsonObject.getInteger("retcode").equals(0)) {
-                            Toast toast = Toast.makeText(mContext, jsonObject.getString("msg"), Toast.LENGTH_SHORT);
-                            toast.setText(jsonObject.getString("msg"));
-                            toast.show();
-                        } else {
-                            if (jsonObject.getIntValue("size") == 0) {
-                                Toast toast = Toast.makeText(mContext, "暂无相关历史内容", Toast.LENGTH_LONG);
-                                toast.setText("暂无相关历史内容");
+    void process() {
+        call = retrofitService.extractVoiceText(uid, finalResult,acceptPic);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                String json;
+                try {
+                    json = response.body().string();
+                    JSONObject jsonObject = JSONObject.parseObject(json);
+                    if (!jsonObject.getInteger("retcode").equals(0)) {
+                        Toast toast = Toast.makeText(mContext, jsonObject.getString("msg"), Toast.LENGTH_SHORT);
+                        toast.setText(jsonObject.getString("msg"));
+                        toast.show();
+                    } else {
+                        keywords = jsonObject.getJSONArray("keywords").toArray(new String[0]);
+                        if (keywords.length != 0) {
+                            if (jsonObject.getInteger("size").equals(0)) {
+                                Toast toast = Toast.makeText(mContext, "没有搜索到相关的内容", Toast.LENGTH_LONG);
+                                toast.setText("没有搜索到相关的内容");
                                 toast.show();
                             } else {
-                                recyclerView.setVisibility(View.VISIBLE);
-                                textView.setVisibility(View.GONE);
-
-                                JSONArray jsonArray = jsonObject.getJSONArray("noteList");
-                                ArrayList<Integer> dates = new ArrayList<>();
-                                ArrayList<String> msgs = new ArrayList<>();
-                                for (int i = 0; i < jsonArray.size(); i++) {
-                                    JSONObject object = jsonArray.getJSONObject(i);
-                                    msgs.add(object.getString("content"));
-                                    dates.add(object.getIntValue("createTime"));
-                                }
-                                adapter.addFooterItem(dates, msgs);
+                                updateMsg(jsonObject.getJSONArray("result"));
                             }
+                        } else {
+                            Toast toast = Toast.makeText(mContext, "未提取出关键词", Toast.LENGTH_LONG);
+                            toast.setText("未提取出关键词");
+                            toast.show();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            }
 
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Toast toast = Toast.makeText(mContext, "网络异常，请稍后重试", Toast.LENGTH_SHORT);
-                    toast.setText("网络异常，请稍后重试");
-                    toast.show();
-                    t.printStackTrace();
-                }
-            });
-        } else {
-            alertDialog.show();
-        }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast toast = Toast.makeText(mContext, "网络异常，请稍后重试", Toast.LENGTH_SHORT);
+                toast.setText("网络异常，请稍后重试");
+                toast.show();
+                t.printStackTrace();
+            }
+        });
     }
 
-    // 通过GPS获取定位信息
-    public void getGPSLocation() {
-        Location gps = LocationUtils.getGPSLocation(mContext);
-        if (gps == null) {
-            //设置定位监听，因为GPS定位，第一次进来可能获取不到，通过设置监听，可以在有效的时间范围内获取定位信息
-            LocationUtils.addLocationListener(mContext, LocationManager.GPS_PROVIDER, new LocationUtils.ILocationListener() {
-                @Override
-                public void onSuccessLocation(Location location) {
-                    if (location != null) {
-                        lat = new BigDecimal(location.getLatitude());
-                        lng = new BigDecimal(location.getLongitude());
-                        LocationUtils.unRegisterListener(mContext);
-//                        Toast.makeText(mContext, "gps onSuccessLocation location:  lat==" + location.getLatitude() + "     lng==" + location.getLongitude(), Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        } else {
-            lat = new BigDecimal(gps.getLatitude());
-            lng = new BigDecimal(gps.getLongitude());
-//            Toast.makeText(mContext, "gps location: lat==" + gps.getLatitude() + "  lng==" + gps.getLongitude(), Toast.LENGTH_SHORT).show();
+    void updateMsg(JSONArray jsonArray) {
+        // 清除上一轮的搜索结果
+        adapter.clearItem();
+
+        ArrayList<Integer> dates = new ArrayList<>();
+        ArrayList<String> msgs = new ArrayList<>();
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JSONObject object = jsonArray.getJSONObject(i);
+            msgs.add(object.getString("content"));
+            dates.add(object.getIntValue("createTime"));
         }
+        adapter.addFooterItem(dates, msgs);
     }
 
-    // 采用最好的方式获取定位信息
-    private void getBestLocation() {
-        Criteria c = new Criteria();//Criteria类是设置定位的标准信息（系统会根据你的要求，匹配最适合你的定位供应商），一个定位的辅助信息的类
-        c.setPowerRequirement(Criteria.POWER_LOW);//设置低耗电
-        c.setAltitudeRequired(true);//设置需要海拔
-        c.setBearingAccuracy(Criteria.ACCURACY_COARSE);//设置COARSE精度标准
-        c.setAccuracy(Criteria.ACCURACY_LOW);//设置低精度
-        //... Criteria 还有其他属性，就不一一介绍了
-        Location best = LocationUtils.getBestLocation(mContext, c);
-        if (best != null) {
-            lat = new BigDecimal(best.getLatitude());
-            lng = new BigDecimal(best.getLongitude());
-//            Toast.makeText(mContext, "best location: lat==" + best.getLatitude() + " lng==" + best.getLongitude(), Toast.LENGTH_SHORT).show();
-        }
+    // list去重避免搜索结果重复
+    List removeDuplicate(List list) {
+        HashSet h = new HashSet(list);
+        list.clear();
+        list.addAll(h);
+        return list;
+    }
+
+    void switchRecordingStatus() {
+        recording = !recording;
     }
 
     public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.ViewHolder> {
@@ -310,7 +302,19 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
             final String msg = msgList.get(position);
             if (!msg.startsWith("_PIC:")) {
                 holder.hereAndNowMsg.setVisibility(View.VISIBLE);
-                holder.hereAndNowMsg.setText(msg);
+
+                // 高亮搜索词
+                SpannableString spannableString = new SpannableString(msg);
+                for (String key : keywords) {
+                    // 放在循环内部才能实现多处span
+                    ForegroundColorSpan span = new ForegroundColorSpan(getColor(R.color.colorPrimary));
+                    // 避免大小写不一致导致找不到key的位置
+                    int start = msg.toLowerCase().indexOf(key.toLowerCase());
+                    if (start != -1) {
+                        spannableString.setSpan(span, start, start + key.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                    }
+                }
+                holder.hereAndNowMsg.setText(spannableString);
             } else {
                 holder.hereAndNowPic.setVisibility(View.VISIBLE);
                 loadPic(msg, holder.hereAndNowPic);
@@ -404,6 +408,18 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
             notifyDataSetChanged();
         }
 
+        void removeDuplicateItem() {
+            dateList = removeDuplicate(dateList);
+            msgList = removeDuplicate(msgList);
+            notifyDataSetChanged();
+        }
+
+        void clearItem() {
+            dateList.clear();
+            msgList.clear();
+            notifyDataSetChanged();
+        }
+
         class ViewHolder extends RecyclerView.ViewHolder {
             private TextView hereAndNowDate;
             private TextView hereAndNowMsg;
@@ -428,10 +444,38 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    // 跳转到设置开启定位
-    public void openLocationSetting() {
-        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-        startActivity(intent);
+    public class CountDownTimerUtils extends CountDownTimer {
+        private TextView mTextView;
+
+        /**
+         * @param millisInFuture    The number of millis in the future from the call
+         *                          to {@link #start()} until the countdown is done and {@link #onFinish()}
+         *                          is called.
+         * @param countDownInterval The interval along the way to receive
+         *                          {@link #onTick(long)} callbacks.
+         */
+        CountDownTimerUtils(TextView textView, long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+            this.mTextView = textView;
+        }
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+            //设置倒计时时间
+            mTextView.setText("录音中：" + (millisUntilFinished / 1000 + 1) + "s");
+            SpannableString spannableString = new SpannableString(mTextView.getText().toString());
+            ForegroundColorSpan span = new ForegroundColorSpan(getColor(R.color.colorPrimary));
+            spannableString.setSpan(span, 4, 5, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+            mTextView.setText(spannableString);
+        }
+
+        @Override
+        public void onFinish() {
+            voiceRecognition.stop();
+            process();
+            this.start();
+            voiceRecognition.start();
+        }
     }
 
     // 加载图片
@@ -514,14 +558,5 @@ public class HereAndNowActivity extends AppCompatActivity implements View.OnClic
          *options.outHeight为原始图片的高
          */
         return new int[]{options.outWidth, options.outHeight};
-    }
-
-    // 获取图片类型
-    public static String getImageMIMEType(String path) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        // inJustDecodeBounds设置为true是为了让图片不加载到内存中
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(path, options);
-        return options.outMimeType;
     }
 }

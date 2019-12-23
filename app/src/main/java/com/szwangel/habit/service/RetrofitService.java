@@ -71,5 +71,5 @@ public interface RetrofitService {
 
     @FormUrlEncoded
     @POST("user/extractVoiceText")
-    Call<ResponseBody> extractVoiceText(@Field("uid") int uid,@Field("text") String text);
+    Call<ResponseBody> extractVoiceText(@Field("uid") int uid,@Field("text") String text, @Field("pic") boolean pic);
 }
